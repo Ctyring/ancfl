@@ -1,0 +1,24 @@
+﻿logs:
+    - name: root
+      level: info
+      formatter: '%d%T%m%n'
+      appenders:
+          - type: FileLogAppender
+            file: /apps/logs/ancfl/root.txt
+          - type: StdoutLogAppender
+    - name: system
+      level: debug
+      formatter: '%d%T%m%n'
+      appenders:
+          - type: FileLogAppender
+            file: /apps/logs/ancfl/system.txt
+            formatter: '%d%T[%p]%T%m%n'
+          - type: StdoutLogAppender
+          # - type: TimeSlicingFileLogAppender
+          #   path: "."
+          #   prefix: "test"
+          #   suffix: ".txt"
+          #   interval: 1
+
+
+

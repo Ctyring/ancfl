@@ -1,0 +1,8 @@
+﻿service_discovery:
+    zk: 127.0.0.1:21811
+rock_services:
+    ancfl.top:
+        "all" : fair
+
+
+

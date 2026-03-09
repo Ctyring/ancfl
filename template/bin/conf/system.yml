@@ -1,0 +1,6 @@
+﻿server:
+    work_path: /apps/work/project_name
+    pid_file: project_name.pid
+
+
+
