@@ -1,4 +1,4 @@
-﻿#include "timer.h"
+#include "timer.h"
 #include "util.h"
 
 namespace ancfl {
@@ -107,7 +107,8 @@ void TimerManager::addTimer(Timer::ptr val, RWMutexType::WriteLock& lock) {
     lock.unlock();
 
     if (at_front) {
-        // 当有新的定时器插入到定时器的首部,执行该函�?        onTimerInsertedAtFront();
+        // 当有新的定时器插入到定时器的首部,执行该函数
+        onTimerInsertedAtFront();
     }
 }
 
@@ -161,13 +162,17 @@ void TimerManager::listExpiredCb(std::vector<std::function<void()>>& cbs) {
         return;
     }
     Timer::ptr now_timer(new Timer(now_ms));
-    // 如果被调整过直接指向最后一个定时器，否则指向第一个大于当前时间的定时�?    auto it = rollover ? m_timers.end() : m_timers.lower_bound(now_timer);
+    // 如果被调整过直接指向最后一个定时器，否则指向第一个大于当前时间的定时器
+    auto it = rollover ? m_timers.end() : m_timers.lower_bound(now_timer);
     while (it != m_timers.end() && (*it)->m_next == now_ms) {
         ++it;
     }
-    // 把所有到期的定时器放到expired�?    expired.insert(expired.begin(), m_timers.begin(), it);
-    // 在集合中去除这些定时器�?    m_timers.erase(m_timers.begin(), it);
-    // 把所有到期的定时器的回调函数放到cbs�?    cbs.reserve(expired.size());
+    // 把所有到期的定时器放到expired中
+    expired.insert(expired.begin(), m_timers.begin(), it);
+    // 在集合中去除这些定时器
+    m_timers.erase(m_timers.begin(), it);
+    // 把所有到期的定时器的回调函数放到cbs中
+    cbs.reserve(expired.size());
     for (auto& timer : expired) {
         cbs.push_back(timer->m_cb);
         // 如果是循环定时器，重新设置定时器的下一次执行时间并再次加入集合
@@ -195,6 +200,3 @@ bool TimerManager::hasTimer() {
     return !m_timers.empty();
 }
 }  // namespace ancfl
-
-
-

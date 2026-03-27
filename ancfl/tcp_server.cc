@@ -1,4 +1,4 @@
-﻿#include "tcp_server.h"
+#include "tcp_server.h"
 #include "config.h"
 #include "log.h"
 
@@ -63,7 +63,8 @@ bool TcpServer::bind(const std::vector<Address::ptr>& addrs,
             fails.push_back(addr);
             continue;
         }
-        // 加入到监听队�?        m_socks.push_back(sock);
+        // 加入到监听队列
+        m_socks.push_back(sock);
     }
 
     if (!fails.empty()) {

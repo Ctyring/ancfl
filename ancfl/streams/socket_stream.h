@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file socket_stream.h
  * @brief Socket流式接口封装
  */
@@ -13,13 +13,16 @@
 namespace ancfl {
 
 /**
- * @brief Socket�? */
+ * @brief Socket流
+ */
 class SocketStream : public Stream {
    public:
     typedef std::shared_ptr<SocketStream> ptr;
 
     /**
-     * @brief 构造函�?     * @param[in] sock Socket�?     * @param[in] owner 是否完全控制
+     * @brief 构造函数
+     * @param[in] sock Socket类
+     * @param[in] owner 是否完全控制
      */
     SocketStream(Socket::ptr sock, bool owner = true);
 
@@ -35,7 +38,8 @@ class SocketStream : public Stream {
      * @param[in] length 待接收数据的内存长度
      * @return
      *      @retval >0 返回实际接收到的数据长度
-     *      @retval =0 socket被远端关�?     *      @retval <0 socket错误
+     *      @retval =0 socket被远端关闭
+     *      @retval <0 socket错误
      */
     virtual int read(void* buffer, size_t length) override;
 
@@ -45,7 +49,8 @@ class SocketStream : public Stream {
      * @param[in] length 待接收数据的内存长度
      * @return
      *      @retval >0 返回实际接收到的数据长度
-     *      @retval =0 socket被远端关�?     *      @retval <0 socket错误
+     *      @retval =0 socket被远端关闭
+     *      @retval <0 socket错误
      */
     virtual int read(ByteArray::ptr ba, size_t length) override;
 
@@ -55,7 +60,8 @@ class SocketStream : public Stream {
      * @param[in] length 待发送数据的内存长度
      * @return
      *      @retval >0 返回实际接收到的数据长度
-     *      @retval =0 socket被远端关�?     *      @retval <0 socket错误
+     *      @retval =0 socket被远端关闭
+     *      @retval <0 socket错误
      */
     virtual int write(const void* buffer, size_t length) override;
 
@@ -65,7 +71,8 @@ class SocketStream : public Stream {
      * @param[in] length 待发送数据的内存长度
      * @return
      *      @retval >0 返回实际接收到的数据长度
-     *      @retval =0 socket被远端关�?     *      @retval <0 socket错误
+     *      @retval =0 socket被远端关闭
+     *      @retval <0 socket错误
      */
     virtual int write(ByteArray::ptr ba, size_t length) override;
 
@@ -75,7 +82,8 @@ class SocketStream : public Stream {
     virtual void close() override;
 
     /**
-     * @brief 返回Socket�?     */
+     * @brief 返回Socket类
+     */
     Socket::ptr getSocket() const { return m_socket; }
 
     /**
@@ -89,7 +97,8 @@ class SocketStream : public Stream {
     std::string getLocalAddressString();
 
    protected:
-    /// Socket�?    Socket::ptr m_socket;
+    /// Socket类
+    Socket::ptr m_socket;
     /// 是否主控
     bool m_owner;
 };
@@ -97,6 +106,3 @@ class SocketStream : public Stream {
 }  // namespace ancfl
 
 #endif
-
-
-

@@ -1,4 +1,4 @@
-﻿#ifndef __ANCFL_NS_NS_PROTOCOL_H__
+#ifndef __ANCFL_NS_NS_PROTOCOL_H__
 #define __ANCFL_NS_NS_PROTOCOL_H__
 
 #include <stdint.h>
@@ -17,8 +17,10 @@ enum class NSCommand {
     REGISTER = 0x10001,
     /// 查询节点信息
     QUERY = 0x10002,
-    /// 设置黑名�?    SET_BLACKLIST = 0x10003,
-    /// 查询黑名�?    QUERY_BLACKLIST = 0x10004,
+    /// 设置黑名单
+    SET_BLACKLIST = 0x10003,
+    /// 查询黑名单
+    QUERY_BLACKLIST = 0x10004,
     /// 心跳
     TICK = 0x10005,
 };

@@ -1,4 +1,4 @@
-﻿#ifndef __ANCFL_ORM_TABLE_H__
+#ifndef __ANCFL_ORM_TABLE_H__
 #define __ANCFL_ORM_TABLE_H__
 
 #include <fstream>
@@ -25,8 +25,10 @@ class Table {
     std::string getFilename() const;
 
    private:
-    // 生成头文�?    void gen_inc(const std::string& path);
-    // 生成源文�?    void gen_src(const std::string& path);
+    // 生成头文件
+    void gen_inc(const std::string& path);
+    // 生成源文件
+    void gen_src(const std::string& path);
     std::string genToStringInc();
     std::string genToStringSrc(const std::string& class_name);
     std::string genToInsertSQL(const std::string& class_name);

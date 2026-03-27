@@ -1,4 +1,4 @@
-﻿#ifndef __ANCFL_ROCK_ROCK_PROTOCOL_H__
+#ifndef __ANCFL_ROCK_ROCK_PROTOCOL_H__
 #define __ANCFL_ROCK_ROCK_PROTOCOL_H__
 
 #include "google/protobuf/message.h"
@@ -94,7 +94,8 @@ class RockMessageDecoder : public MessageDecoder {
 
     // 解析数据
     virtual Message::ptr parseFrom(Stream::ptr stream) override;
-    // 序列化数�?    virtual int32_t serializeTo(Stream::ptr stream, Message::ptr msg) override;
+    // 序列化数据
+    virtual int32_t serializeTo(Stream::ptr stream, Message::ptr msg) override;
 };
 
 }  // namespace ancfl

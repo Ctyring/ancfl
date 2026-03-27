@@ -1,4 +1,4 @@
-﻿#include "zlib_stream.h"
+#include "zlib_stream.h"
 #include "ancfl/macro.h"
 
 namespace ancfl {
@@ -100,7 +100,8 @@ int ZlibStream::init(Type type,
     m_zstream.zfree = Z_NULL;
     m_zstream.opaque = Z_NULL;
 
-    // window_bits 的值真正决定了压缩的方�?    switch (type) {
+    // window_bits 的值真正决定了压缩的方式
+    switch (type) {
         case DEFLATE:
             window_bits = -window_bits;
             break;
@@ -113,10 +114,12 @@ int ZlibStream::init(Type type,
     }
 
     if (m_encode) {
-        // 初始化压�?        return deflateInit2(&m_zstream, level, Z_DEFLATED, window_bits,
+        // 初始化压缩
+        return deflateInit2(&m_zstream, level, Z_DEFLATED, window_bits,
                             memlevel, (int)strategy);
     } else {
-        // 初始化解�?        return inflateInit2(&m_zstream, window_bits);
+        // 初始化解压
+        return inflateInit2(&m_zstream, window_bits);
     }
 }
 
@@ -124,7 +127,8 @@ int ZlibStream::encode(const iovec* v, const uint64_t& size, bool finish) {
     int ret = 0;
     int flush = 0;
     for (uint64_t i = 0; i < size; ++i) {
-        // 设置输入缓冲�?        m_zstream.avail_in = v[i].iov_len;
+        // 设置输入缓冲区
+        m_zstream.avail_in = v[i].iov_len;
         m_zstream.next_in = (Bytef*)v[i].iov_base;
         // 判断是否要flush
         flush = finish ? (i == size - 1 ? Z_FINISH : Z_NO_FLUSH) : Z_NO_FLUSH;
@@ -162,33 +166,40 @@ int ZlibStream::decode(const iovec* v, const uint64_t& size, bool finish) {
     int ret = 0;
     int flush = 0;
     for (uint64_t i = 0; i < size; ++i) {
-        // 设置输入缓冲�?        m_zstream.avail_in = v[i].iov_len;
+        // 设置输入缓冲区
+        m_zstream.avail_in = v[i].iov_len;
         m_zstream.next_in = (Bytef*)v[i].iov_base;
-        // 判断是否是最后一次读�?        flush = finish ? (i == size - 1 ? Z_FINISH : Z_NO_FLUSH) : Z_NO_FLUSH;
-        // 数据指针
-        iovec* ivc = nullptr;
-        do {
-            // 如果buffs不为空，且最后一个buff的长度不等于buffSize
-            if (!m_buffs.empty() && m_buffs.back().iov_len != m_buffSize) {
-                // 获取最后一个buff
-                ivc = &m_buffs.back();
-            } else {
-                // 否则创建一个新的buff
-                iovec vc;
-                vc.iov_base = malloc(m_buffSize);
-                vc.iov_len = 0;
-                m_buffs.push_back(vc);
-                ivc = &m_buffs.back();
-            }
-            // 设置输出缓冲�?            m_zstream.avail_out = m_buffSize - ivc->iov_len;
-            m_zstream.next_out = (Bytef*)ivc->iov_base + ivc->iov_len;
+        // 判断是否是最后一次读取
+        flush = finish
+            ? (i == size - 1 ?
+                             // Z_FINISH : Z_NO_FLUSH) : Z_NO_FLUSH; 数据指针
+               iovec* ivc = nullptr;
+               do {
+                   // 如果buffs不为空，且最后一个buff的长度不等于buffSize
+                   if (!m_buffs.empty() &&
+                       m_buffs.back().iov_len != m_buffSize) {
+                       // 获取最后一个buff
+                       ivc = &m_buffs.back();
+                   } else {
+                       // 否则创建一个新的buff
+                       iovec vc;
+                       vc.iov_base = malloc(m_buffSize);
+                       vc.iov_len = 0;
+                       m_buffs.push_back(vc);
+                       ivc = &m_buffs.back();
+                   }
+                   // 设置输出缓冲区
+                   m_zstream.avail_out = m_buffSize - ivc->iov_len;
+                   m_zstream.next_out = (Bytef*)ivc->iov_base + ivc->iov_len;
 
-            // 解压�?            ret = inflate(&m_zstream, flush);
-            if (ret == Z_STREAM_ERROR) {
-                return ret;
-            }
-            // 更新buff的长�?            ivc->iov_len = m_buffSize - m_zstream.avail_out;
-            // 如果是最后一次读取，解压缩完�?        } while (m_zstream.avail_out == 0);
+                   ret = inflate(&m_zstream, flush);
+                   if (ret == Z_STREAM_ERROR) {
+                       return ret;
+                   }
+                   // 更新buff的长度
+                   ivc->iov_len = m_buffSize - m_zstream.avail_out;
+                   // 如果是最后一次读取，解压缩完成
+               } while (m_zstream.avail_out == 0);
     }
 
     if (flush == Z_FINISH) {
@@ -228,6 +239,3 @@ ancfl::ByteArray::ptr ZlibStream::getByteArray() {
 }
 
 }  // namespace ancfl
-
-
-

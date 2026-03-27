@@ -1,4 +1,4 @@
-﻿#ifndef __ANCFL_MUTEX_H__
+#ifndef __ANCFL_MUTEX_H__
 #define __ANCFL_MUTEX_H__
 
 #include <pthread.h>
@@ -16,11 +16,13 @@
 namespace ancfl {
 
 /**
- * @brief 信号�? */
+ * @brief 信号量
+ */
 class Semaphore : Noncopyable {
    public:
     /**
-     * @brief 构造函�?     * @param[in] count 信号量值的大小
+     * @brief 构造函数
+     * @param[in] count 信号量值的大小
      */
     Semaphore(uint32_t count = 0);
 
@@ -30,11 +32,13 @@ class Semaphore : Noncopyable {
     ~Semaphore();
 
     /**
-     * @brief 获取信号�?     */
+     * @brief 获取信号量
+     */
     void wait();
 
     /**
-     * @brief 释放信号�?     */
+     * @brief 释放信号量
+     */
     void notify();
 
    private:
@@ -42,12 +46,14 @@ class Semaphore : Noncopyable {
 };
 
 /**
- * @brief 局部锁的模板实�? */
+ * @brief 局部锁的模板实现
+ */
 template <class T>
 struct ScopedLockImpl {
    public:
     /**
-     * @brief 构造函�?     * @param[in] mutex Mutex
+     * @brief 构造函数
+     * @param[in] mutex Mutex
      */
     ScopedLockImpl(T& mutex) : m_mutex(mutex) {
         m_mutex.lock();
@@ -55,7 +61,8 @@ struct ScopedLockImpl {
     }
 
     /**
-     * @brief 析构函数,自动释放�?     */
+     * @brief 析构函数,自动释放锁
+     */
     ~ScopedLockImpl() { unlock(); }
 
     /**
@@ -81,27 +88,33 @@ struct ScopedLockImpl {
    private:
     /// mutex
     T& m_mutex;
-    /// 是否已上�?    bool m_locked;
+    /// 是否已上锁
+    bool m_locked;
 };
 
 /**
- * @brief 局部读锁模板实�? */
+ * @brief 局部读锁模板实现
+ */
 template <class T>
 struct ReadScopedLockImpl {
    public:
     /**
-     * @brief 构造函�?     * @param[in] mutex 读写�?     */
+     * @brief 构造函数
+     * @param[in] mutex 读写锁
+     */
     ReadScopedLockImpl(T& mutex) : m_mutex(mutex) {
         m_mutex.rdlock();
         m_locked = true;
     }
 
     /**
-     * @brief 析构函数,自动释放�?     */
+     * @brief 析构函数,自动释放锁
+     */
     ~ReadScopedLockImpl() { unlock(); }
 
     /**
-     * @brief 上读�?     */
+     * @brief 上读锁
+     */
     void lock() {
         if (!m_locked) {
             m_mutex.rdlock();
@@ -110,7 +123,8 @@ struct ReadScopedLockImpl {
     }
 
     /**
-     * @brief 释放�?     */
+     * @brief 释放锁
+     */
     void unlock() {
         if (m_locked) {
             m_mutex.unlock();
@@ -121,16 +135,20 @@ struct ReadScopedLockImpl {
    private:
     /// mutex
     T& m_mutex;
-    /// 是否已上�?    bool m_locked;
+    /// 是否已上锁
+    bool m_locked;
 };
 
 /**
- * @brief 局部写锁模板实�? */
+ * @brief 局部写锁模板实现
+ */
 template <class T>
 struct WriteScopedLockImpl {
    public:
     /**
-     * @brief 构造函�?     * @param[in] mutex 读写�?     */
+     * @brief 构造函数
+     * @param[in] mutex 读写锁
+     */
     WriteScopedLockImpl(T& mutex) : m_mutex(mutex) {
         m_mutex.wrlock();
         m_locked = true;
@@ -142,7 +160,8 @@ struct WriteScopedLockImpl {
     ~WriteScopedLockImpl() { unlock(); }
 
     /**
-     * @brief 上写�?     */
+     * @brief 上写锁
+     */
     void lock() {
         if (!m_locked) {
             m_mutex.wrlock();
@@ -163,18 +182,21 @@ struct WriteScopedLockImpl {
    private:
     /// Mutex
     T& m_mutex;
-    /// 是否已上�?    bool m_locked;
+    /// 是否已上锁
+    bool m_locked;
 };
 
 /**
- * @brief 互斥�? */
+ * @brief 互斥锁
+ */
 class Mutex : Noncopyable {
    public:
     /// 局部锁
     typedef ScopedLockImpl<Mutex> Lock;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     Mutex() { pthread_mutex_init(&m_mutex, nullptr); }
 
     /**
@@ -206,7 +228,8 @@ class NullMutex : Noncopyable {
     typedef ScopedLockImpl<NullMutex> Lock;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     NullMutex() {}
 
     /**
@@ -226,15 +249,19 @@ class NullMutex : Noncopyable {
 };
 
 /**
- * @brief 读写互斥�? */
+ * @brief 读写互斥锁
+ */
 class RWMutex : Noncopyable {
    public:
-    /// 局部读�?    typedef ReadScopedLockImpl<RWMutex> ReadLock;
+    /// 局部读锁
+    typedef ReadScopedLockImpl<RWMutex> ReadLock;
 
-    /// 局部写�?    typedef WriteScopedLockImpl<RWMutex> WriteLock;
+    /// 局部写锁
+    typedef WriteScopedLockImpl<RWMutex> WriteLock;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     RWMutex() { pthread_rwlock_init(&m_lock, nullptr); }
 
     /**
@@ -243,11 +270,13 @@ class RWMutex : Noncopyable {
     ~RWMutex() { pthread_rwlock_destroy(&m_lock); }
 
     /**
-     * @brief 上读�?     */
+     * @brief 上读锁
+     */
     void rdlock() { pthread_rwlock_rdlock(&m_lock); }
 
     /**
-     * @brief 上写�?     */
+     * @brief 上写锁
+     */
     void wrlock() { pthread_rwlock_wrlock(&m_lock); }
 
     /**
@@ -256,7 +285,8 @@ class RWMutex : Noncopyable {
     void unlock() { pthread_rwlock_unlock(&m_lock); }
 
    private:
-    /// 读写�?    pthread_rwlock_t m_lock;
+    /// 读写锁
+    pthread_rwlock_t m_lock;
 };
 
 /**
@@ -264,11 +294,14 @@ class RWMutex : Noncopyable {
  */
 class NullRWMutex : Noncopyable {
    public:
-    /// 局部读�?    typedef ReadScopedLockImpl<NullMutex> ReadLock;
-    /// 局部写�?    typedef WriteScopedLockImpl<NullMutex> WriteLock;
+    /// 局部读锁
+    typedef ReadScopedLockImpl<NullMutex> ReadLock;
+    /// 局部写锁
+    typedef WriteScopedLockImpl<NullMutex> WriteLock;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     NullRWMutex() {}
     /**
      * @brief 析构函数
@@ -276,11 +309,13 @@ class NullRWMutex : Noncopyable {
     ~NullRWMutex() {}
 
     /**
-     * @brief 上读�?     */
+     * @brief 上读锁
+     */
     void rdlock() {}
 
     /**
-     * @brief 上写�?     */
+     * @brief 上写锁
+     */
     void wrlock() {}
     /**
      * @brief 解锁
@@ -289,14 +324,16 @@ class NullRWMutex : Noncopyable {
 };
 
 /**
- * @brief 自旋�? */
+ * @brief 自旋锁
+ */
 class Spinlock : Noncopyable {
    public:
     /// 局部锁
     typedef ScopedLockImpl<Spinlock> Lock;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     Spinlock() { pthread_spin_init(&m_mutex, 0); }
 
     /**
@@ -315,18 +352,21 @@ class Spinlock : Noncopyable {
     void unlock() { pthread_spin_unlock(&m_mutex); }
 
    private:
-    /// 自旋�?    pthread_spinlock_t m_mutex;
+    /// 自旋锁
+    pthread_spinlock_t m_mutex;
 };
 
 /**
- * @brief 原子�? */
+ * @brief 原子锁
+ */
 class CASLock : Noncopyable {
    public:
     /// 局部锁
     typedef ScopedLockImpl<CASLock> Lock;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     CASLock() { m_mutex.clear(); }
 
     /**
@@ -351,7 +391,8 @@ class CASLock : Noncopyable {
     }
 
    private:
-    /// 原子状�?    volatile std::atomic_flag m_mutex;
+    /// 原子状态
+    volatile std::atomic_flag m_mutex;
 };
 
 class Scheduler;
@@ -378,6 +419,3 @@ class FiberSemaphore : Noncopyable {
 }  // namespace ancfl
 
 #endif
-
-
-

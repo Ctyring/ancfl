@@ -1,11 +1,11 @@
-﻿#include "env.h"
+#include "env.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <iomanip>
 #include <iostream>
-#include "config.h"
 #include "ancfl/log.h"
+#include "config.h"
 
 namespace ancfl {
 
@@ -14,7 +14,9 @@ static ancfl::Logger::ptr g_logger = ANCFL_LOG_NAME("system");
 bool Env::init(int argc, char** argv) {
     char link[1024] = {0};
     char path[1024] = {0};
-    // 获取当前进程的可执行文件的绝对路�?    // 通过/proc/$pid/exe目录下exe软链接文件指向的路径来确�?    sprintf(link, "/proc/%d/exe", getpid());
+    // 获取当前进程的可执行文件的绝对路径
+    // 通过/proc/$pid/exe目录下exe软链接文件指向的路径来确定
+    sprintf(link, "/proc/%d/exe", getpid());
     readlink(link, path, sizeof(path));
     // /path/xxx/exe
     m_exe = path;
@@ -25,7 +27,8 @@ bool Env::init(int argc, char** argv) {
     m_program = argv[0];
     // -config /path/to/config -file xxxx -d
     const char* now_key = nullptr;
-    // 遍历命令行参�?    for (int i = 1; i < argc; ++i) {
+    // 遍历命令行参数
+    for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
             if (strlen(argv[i]) > 1) {
                 if (now_key) {
@@ -142,6 +145,3 @@ std::string Env::getConfigPath() {
 }
 
 }  // namespace ancfl
-
-
-

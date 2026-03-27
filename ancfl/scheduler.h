@@ -1,6 +1,7 @@
-﻿/**
+/**
  * @file scheduler.h
- * @brief 协程调度器封�? */
+ * @brief 协程调度器封装
+ */
 #ifndef __ANCFL_SCHEDULER_H__
 #define __ANCFL_SCHEDULER_H__
 
@@ -15,7 +16,8 @@
 namespace ancfl {
 
 /**
- * @brief 协程调度�? * @details 封装的是N-M的协程调度器
+ * @brief 协程调度器
+ * @details 封装的是N-M的协程调度器
  *          内部有一个线程池,支持协程在线程池里面切换
  */
 class Scheduler {
@@ -24,9 +26,11 @@ class Scheduler {
     typedef Mutex MutexType;
 
     /**
-     * @brief 构造函�?     * @param[in] threads 线程数量
+     * @brief 构造函数
+     * @param[in] threads 线程数量
      * @param[in] use_caller 是否使用当前调用线程
-     * @param[in] name 协程调度器名�?     */
+     * @param[in] name 协程调度器名称
+     */
     Scheduler(size_t threads = 1,
               bool use_caller = true,
               const std::string& name = "");
@@ -37,11 +41,13 @@ class Scheduler {
     virtual ~Scheduler();
 
     /**
-     * @brief 返回协程调度器名�?     */
+     * @brief 返回协程调度器名称
+     */
     const std::string& getName() const { return m_name; }
 
     /**
-     * @brief 返回当前协程调度�?     */
+     * @brief 返回当前协程调度器
+     */
     static Scheduler* GetThis();
 
     /**
@@ -50,16 +56,19 @@ class Scheduler {
     static Fiber* GetMainFiber();
 
     /**
-     * @brief 启动协程调度�?     */
+     * @brief 启动协程调度器
+     */
     void start();
 
     /**
-     * @brief 停止协程调度�?     */
+     * @brief 停止协程调度器
+     */
     void stop();
 
     /**
      * @brief 调度协程
-     * @param[in] fc 协程或函�?     * @param[in] thread 协程执行的线程id,-1标识任意线程
+     * @param[in] fc 协程或函数
+     * @param[in] thread 协程执行的线程id,-1标识任意线程
      */
     template <class FiberOrCb>
     void schedule(FiberOrCb fc, int thread = -1) {
@@ -76,7 +85,9 @@ class Scheduler {
 
     /**
      * @brief 批量调度协程
-     * @param[in] begin 协程数组的开�?     * @param[in] end 协程数组的结�?     */
+     * @param[in] begin 协程数组的开始
+     * @param[in] end 协程数组的结束
+     */
     template <class InputIterator>
     void schedule(InputIterator begin, InputIterator end) {
         bool need_tickle = false;
@@ -97,7 +108,8 @@ class Scheduler {
 
    protected:
     /**
-     * @brief 通知协程调度器有任务�?     */
+     * @brief 通知协程调度器有任务
+     */
 
     virtual void tickle();
     /**
@@ -121,7 +133,8 @@ class Scheduler {
     void setThis();
 
     /**
-     * @brief 是否有空闲线�?     */
+     * @brief 是否有空闲线程
+     */
     bool hasIdleThreads() { return m_idleThreadCount > 0; }
 
    private:
@@ -140,7 +153,8 @@ class Scheduler {
 
    private:
     /**
-     * @brief 协程/函数/线程�?     */
+     * @brief 协程/函数/线程组
+     */
     struct FiberAndThread {
         /// 协程
         Fiber::ptr fiber;
@@ -150,26 +164,30 @@ class Scheduler {
         int thread;
 
         /**
-         * @brief 构造函�?         * @param[in] f 协程
+         * @brief 构造函数
+         * @param[in] f 协程
          * @param[in] thr 线程id
          */
         FiberAndThread(Fiber::ptr f, int thr) : fiber(f), thread(thr) {}
 
         /**
-         * @brief 构造函�?         * @param[in] f 协程指针
+         * @brief 构造函数
+         * @param[in] f 协程指针
          * @param[in] thr 线程id
          * @post *f = nullptr
          */
         FiberAndThread(Fiber::ptr* f, int thr) : thread(thr) { fiber.swap(*f); }
 
         /**
-         * @brief 构造函�?         * @param[in] f 协程执行函数
+         * @brief 构造函数
+         * @param[in] f 协程执行函数
          * @param[in] thr 线程id
          */
         FiberAndThread(std::function<void()> f, int thr) : cb(f), thread(thr) {}
 
         /**
-         * @brief 构造函�?         * @param[in] f 协程执行函数指针
+         * @brief 构造函数
+         * @param[in] f 协程执行函数指针
          * @param[in] thr 线程id
          * @post *f = nullptr
          */
@@ -178,7 +196,8 @@ class Scheduler {
         }
 
         /**
-         * @brief 无参构造函�?         */
+         * @brief 无参构造函数
+         */
         FiberAndThread() : thread(-1) {}
 
         /**
@@ -194,12 +213,14 @@ class Scheduler {
    private:
     /// Mutex
     MutexType m_mutex;
-    /// 线程�?    std::vector<Thread::ptr> m_threads;
+    /// 线程池
+    std::vector<Thread::ptr> m_threads;
     /// 待执行的协程队列
     std::list<FiberAndThread> m_fibers;
-    /// use_caller为true时有�? 调度协程
+    /// use_caller为true时有值 调度协程
     Fiber::ptr m_rootFiber;
-    /// 协程调度器名�?    std::string m_name;
+    /// 协程调度器名称
+    std::string m_name;
 
    protected:
     /// 协程下的线程id数组
@@ -230,6 +251,3 @@ class SchedulerSwitcher : public Noncopyable {
 }  // namespace ancfl
 
 #endif
-
-
-

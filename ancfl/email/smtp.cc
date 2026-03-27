@@ -90,7 +90,7 @@ SmtpResult::ptr SmtpClient::send(EMail::ptr email,
     std::string cmd = "HELO " + m_host + "\r\n";
     DO_CMD();
     if (!m_authed && !email->getFromEMailAddress().empty()) {
-        // 发送AUTH LOGIN命令，表示开始进行登录验�?服务端会返回 334
+        // 发送AUTH LOGIN命令，表示开始进行登录验证 服务端会返回 334
         // dXNlcm5hbWU6
         cmd = "AUTH LOGIN\r\n";
         DO_CMD();
@@ -126,16 +126,17 @@ SmtpResult::ptr SmtpClient::send(EMail::ptr email,
         DO_CMD();
     }
 
-    // 发送DATA命令，表示开始发送邮件内�?DATA 服务端会返回 354 End data with
+    // 发送DATA命令，表示开始发送邮件内容 DATA 服务端会返回 354 End data with
     // <CR><LF>.<CR><LF>
-    // 表示当我们希望结束邮件内容的输入时，需要在一行单独输入一�?.
-    // 并且以回车换行结�?�?\r\n. \r\n
+    // 表示当我们希望结束邮件内容的输入时，需要在一行单独输入一个.
+    // 并且以回车换行结束 \r\n. \r\n
     cmd = "DATA\r\n";
     DO_CMD();
 
     auto& entitys = email->getEntitys();
-    // 接下来拼接邮件内�?    std::stringstream ss;
-    // 邮件�?格式�?From: <发件人邮箱地址> To: <收件人邮箱地址> Subject:
+    // 接下来拼接邮件内容
+    std::stringstream ss;
+    // 邮件格式 From: <发件人邮箱地址> To: <收件人邮箱地址> Subject:
     // 邮件标题
     ss << "From: <" << email->getFromEMailAddress() << ">\r\n"
        << "To: ";
@@ -159,12 +160,14 @@ SmtpResult::ptr SmtpClient::send(EMail::ptr email,
     }
     ss << "Subject: " << email->getTitle() << "\r\n";
     std::string boundary;
-    // 如果有附件就需要生成一个boundary 用于分隔邮件内容的每个部�?    if (!entitys.empty()) {
+    // 如果有附件就需要生成一个boundary 用于分隔邮件内容的每个部分
+    if (!entitys.empty()) {
         boundary = ancfl::random_string(16);
         ss << "Content-Type: multipart/mixed;boundary=" << boundary << "\r\n";
     }
     ss << "MIME-Version: 1.0\r\n";
-    // 分隔�?    if (!boundary.empty()) {
+    // 分隔符
+    if (!boundary.empty()) {
         ss << "\r\n--" << boundary << "\r\n";
     }
     // 文本信息
@@ -192,6 +195,3 @@ std::string SmtpClient::getDebugInfo() {
 }
 
 }  // namespace ancfl
-
-
-

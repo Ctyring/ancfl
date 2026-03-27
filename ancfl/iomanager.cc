@@ -1,4 +1,4 @@
-﻿#include "iomanager.h"
+#include "iomanager.h"
 #include "log.h"
 #include "macro.h"
 
@@ -82,20 +82,23 @@ void IOManager::FdContext::triggerEvent(IOManager::Event event) {
     ANCFL_ASSERT(events & event);
     // 取出事件
     events = (Event)(events & ~event);
-    // 获取上下�?    EventContext& ctx = getContext(event);
+    // 获取上下文
+    EventContext& ctx = getContext(event);
     // 执行
     if (ctx.cb) {
         ctx.scheduler->schedule(&ctx.cb);
     } else {
         ctx.scheduler->schedule(&ctx.fiber);
     }
-    // 释放调度�?    ctx.scheduler = nullptr;
+    // 释放调度器
+    ctx.scheduler = nullptr;
     return;
 }
 
 IOManager::IOManager(size_t threads, bool use_caller, const std::string& name)
     : Scheduler(threads, use_caller, name) {
-    // 创建一�?epoll 实例�?返回新实例的 fd�?    m_epfd = epoll_create(5000);
+    // 创建一个 epoll 实例，返回新实例的 fd
+    m_epfd = epoll_create(5000);
     ANCFL_ASSERT(m_epfd > 0);
 
     // 创建匿名管道
@@ -109,15 +112,18 @@ IOManager::IOManager(size_t threads, bool use_caller, const std::string& name)
     // 把epoll的fd和匿名管道的读端fd关联起来
     event.data.fd = m_tickleFds[0];
 
-    // 把读端设置为非阻�?    rt = fcntl(m_tickleFds[0], F_SETFL, O_NONBLOCK);
+    // 把读端设置为非阻塞
+    rt = fcntl(m_tickleFds[0], F_SETFL, O_NONBLOCK);
     ANCFL_ASSERT(!rt);
 
-    // 把管道读端以及关注的触发事件添加到epoll实例�?    rt = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_tickleFds[0], &event);
+    // 把管道读端以及关注的触发事件添加到epoll实例中
+    rt = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_tickleFds[0], &event);
     ANCFL_ASSERT(!rt);
 
     contextResize(32);
 
-    // 启动调度�?    start();
+    // 启动调度器
+    start();
 }
 
 IOManager::~IOManager() {
@@ -167,11 +173,14 @@ int IOManager::addEvent(int fd, Event event, std::function<void()> cb) {
         ANCFL_ASSERT(!(fd_ctx->events & event));
     }
 
-    // 判断具体操作是新增还是修�?    int op = fd_ctx->events ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
-    // 构造新的事�?    epoll_event epevent;
+    // 判断具体操作是新增还是修改
+    int op = fd_ctx->events ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
+    // 构造新的事件
+    epoll_event epevent;
     epevent.events = EPOLLET | fd_ctx->events | event;
     epevent.data.ptr = fd_ctx;
-    // 修改epoll中对该fd的监听情�?    int rt = epoll_ctl(m_epfd, op, fd, &epevent);
+    // 修改epoll中对该fd的监听情况
+    int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if (rt) {
         ANCFL_LOG_ERROR(g_logger)
             << "epoll_ctl(" << m_epfd << ", " << op << "," << fd << ","
@@ -339,7 +348,8 @@ void IOManager::idle() {
 
     while (true) {
         uint64_t next_timeout = 0;
-        // 判断是否已经完成所有任务，开始停�?        if (stopping()) {
+        // 判断是否已经完成所有任务，开始停止
+        if (stopping()) {
             next_timeout = getNextTimer();
             if (next_timeout == ~0ull) {
                 ANCFL_LOG_INFO(g_logger)
@@ -360,8 +370,10 @@ void IOManager::idle() {
             // 等待事件，如果没有事件到来，在next_timeout时间之前会将整个进程陷入睡眠
             rt = epoll_wait(m_epfd, events, MAX_EVNETS, (int)next_timeout);
             if (rt < 0 && errno == EINTR) {
-                // 如果是被信号中断，说明需要继续等待�?            } else {
-                // 如果有事件或者到了超时时�?定时器需要触�?，就跳循�?                break;
+                // 如果是被信号中断，说明需要继续等待
+            } else {
+                // 如果有事件或者到了超时时间，定时器需要触发，就跳循环
+                break;
             }
         } while (true);
         // 拿到所有要处理的定时器回调函数
@@ -378,7 +390,8 @@ void IOManager::idle() {
         // 处理完定时器开始处理IO事件
         for (int i = 0; i < rt; ++i) {
             epoll_event& event = events[i];
-            // 如果是tickle事件，就读完跳过（这个事件只是为了唤醒epoll_wait�?            if (event.data.fd == m_tickleFds[0]) {
+            // 如果是tickle事件，就读完跳过（这个事件只是为了唤醒epoll_wait）
+            if (event.data.fd == m_tickleFds[0]) {
                 uint8_t dummy[MAX_EVNETS];
                 while (read(m_tickleFds[0], dummy, sizeof(dummy)) > 0) {
                 }
@@ -387,7 +400,8 @@ void IOManager::idle() {
             // 如果是IO事件，就处理
             FdContext* fd_ctx = (FdContext*)event.data.ptr;
             FdContext::MutexType::Lock lock(fd_ctx->mutex);
-            // 重新处理一�?            if (event.events & (EPOLLERR | EPOLLHUP)) {
+            // 重新处理一下
+            if (event.events & (EPOLLERR | EPOLLHUP)) {
                 event.events |= (EPOLLIN | EPOLLOUT) & fd_ctx->events;
             }
             int real_events = NONE;
@@ -397,15 +411,18 @@ void IOManager::idle() {
             if (event.events & EPOLLOUT) {
                 real_events |= WRITE;
             }
-            // 如果没有事件，就退�?            if ((fd_ctx->events & real_events) == NONE) {
+            // 如果没有事件，就退出
+            if ((fd_ctx->events & real_events) == NONE) {
                 continue;
             }
             // 获取剩余事件(看是否都被处理了)
             int left_events = (fd_ctx->events & ~real_events);
-            // 如果处理完了就退�?            int op = left_events ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
+            // 如果处理完了就退出
+            int op = left_events ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
             // 从剩余事件继续放入epoll
             event.events = EPOLLET | left_events;
-            // 修改epoll的监�?            int rt2 = epoll_ctl(m_epfd, op, fd_ctx->fd, &event);
+            // 修改epoll的监听
+            int rt2 = epoll_ctl(m_epfd, op, fd_ctx->fd, &event);
             if (rt2) {
                 ANCFL_LOG_ERROR(g_logger)
                     << "epoll_ctl(" << m_epfd << ", " << (EpollCtlOp)op << ", "
@@ -425,7 +442,8 @@ void IOManager::idle() {
             }
         }
         // 让出协程，处理其他协程，处理完会再切进来(scheduler的run方法)
-        // 只有这个协程切出去了，才会去调度其他协程，刚刚其实只是把任务排序管理了一�?        Fiber::ptr cur = Fiber::GetThis();
+        // 只有这个协程切出去了，才会去调度其他协程，刚刚其实只是把任务排序管理了一下
+        // Fiber::ptr cur = Fiber::GetThis();
         auto raw_ptr = cur.get();
         cur.reset();
 
@@ -437,6 +455,3 @@ void IOManager::onTimerInsertedAtFront() {
     tickle();
 }
 }  // namespace ancfl
-
-
-

@@ -1,4 +1,4 @@
-﻿#ifndef __ANCFL_HTTP_PARSER_H__
+#ifndef __ANCFL_HTTP_PARSER_H__
 #define __ANCFL_HTTP_PARSER_H__
 
 #include "http.h"
@@ -9,21 +9,24 @@ namespace ancfl {
 namespace http {
 
 /**
- * @brief HTTP请求解析�? */
+ * @brief HTTP请求解析器
+ */
 class HttpRequestParser {
    public:
     /// HTTP解析类的智能指针
     typedef std::shared_ptr<HttpRequestParser> ptr;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     HttpRequestParser();
 
     /**
      * @brief 解析协议
      * @param[in, out] data 协议文本内存
      * @param[in] len 协议文本内存长度
-     * @return 返回实际解析的长�?并且将已解析的数据移�?     */
+     * @return 返回实际解析的长度,并且将已解析的数据移除
+     */
     size_t execute(char* data, size_t len);
 
     /**
@@ -33,29 +36,36 @@ class HttpRequestParser {
     int isFinished();
 
     /**
-     * @brief 是否有错�?     * @return 是否有错�?     */
+     * @brief 是否有错误
+     * @return 是否有错误
+     */
     int hasError();
 
     /**
-     * @brief 返回HttpRequest结构�?     */
+     * @brief 返回HttpRequest结构体
+     */
     HttpRequest::ptr getData() const { return m_data; }
 
     /**
      * @brief 设置错误
-     * @param[in] v 错误�?     */
+     * @param[in] v 错误码
+     */
     void setError(int v) { m_error = v; }
 
     /**
-     * @brief 获取消息体长�?     */
+     * @brief 获取消息体长度
+     */
     uint64_t getContentLength();
 
     /**
-     * @brief 获取http_parser结构�?     */
+     * @brief 获取http_parser结构体
+     */
     const http_parser& getParser() const { return m_parser; }
 
    public:
     /**
-     * @brief 返回HttpRequest协议解析的缓存大�?     */
+     * @brief 返回HttpRequest协议解析的缓存大小
+     */
     static uint64_t GetHttpRequestBufferSize();
 
     /**
@@ -68,21 +78,24 @@ class HttpRequestParser {
     http_parser m_parser;
     /// HttpRequest结构
     HttpRequest::ptr m_data;
-    /// 错误�?    /// 1000: invalid method
+    /// 错误码
+    /// 1000: invalid method
     /// 1001: invalid version
     /// 1002: invalid field
     int m_error;
 };
 
 /**
- * @brief Http响应解析结构�? */
+ * @brief Http响应解析结构体
+ */
 class HttpResponseParser {
    public:
     /// 智能指针类型
     typedef std::shared_ptr<HttpResponseParser> ptr;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     HttpResponseParser();
 
     /**
@@ -90,7 +103,7 @@ class HttpResponseParser {
      * @param[in, out] data 协议数据内存
      * @param[in] len 协议数据内存大小
      * @param[in] chunck 是否在解析chunck
-     * @return 返回实际解析的长�?并且移除已解析的数据
+     * @return 返回实际解析的长度,并且移除已解析的数据
      */
     size_t execute(char* data, size_t len, bool chunck);
 
@@ -100,7 +113,8 @@ class HttpResponseParser {
     int isFinished();
 
     /**
-     * @brief 是否有错�?     */
+     * @brief 是否有错误
+     */
     int hasError();
 
     /**
@@ -109,11 +123,14 @@ class HttpResponseParser {
     HttpResponse::ptr getData() const { return m_data; }
 
     /**
-     * @brief 设置错误�?     * @param[in] v 错误�?     */
+     * @brief 设置错误码
+     * @param[in] v 错误码
+     */
     void setError(int v) { m_error = v; }
 
     /**
-     * @brief 获取消息体长�?     */
+     * @brief 获取消息体长度
+     */
     uint64_t getContentLength();
 
     /**
@@ -137,7 +154,8 @@ class HttpResponseParser {
     httpclient_parser m_parser;
     /// HttpResponse
     HttpResponse::ptr m_data;
-    /// 错误�?    /// 1001: invalid version
+    /// 错误码
+    /// 1001: invalid version
     /// 1002: invalid field
     int m_error;
 };
@@ -146,6 +164,3 @@ class HttpResponseParser {
 }  // namespace ancfl
 
 #endif
-
-
-

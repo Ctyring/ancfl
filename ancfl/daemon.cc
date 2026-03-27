@@ -1,4 +1,4 @@
-﻿#include "daemon.h"
+#include "daemon.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -41,7 +41,8 @@ static int real_daemon(int argc,
     while (true) {
         pid_t pid = fork();
         if (pid == 0) {
-            //子进程返�?            ProcessInfoMgr::GetInstance()->main_id = getpid();
+            // 子进程返回
+            ProcessInfoMgr::GetInstance()->main_id = getpid();
             ProcessInfoMgr::GetInstance()->main_start_time = time(0);
             ANCFL_LOG_INFO(g_logger) << "process start pid=" << getpid();
             return real_start(argc, argv, main_cb);
@@ -51,7 +52,8 @@ static int real_daemon(int argc,
                 << " errstr=" << strerror(errno);
             return -1;
         } else {
-            //父进程返�?            int status = 0;
+            // 父进程返回
+            int status = 0;
             waitpid(pid, &status, 0);
             if (status) {
                 if (status == 9) {
@@ -85,6 +87,3 @@ int start_daemon(int argc,
     return real_daemon(argc, argv, main_cb);
 }
 }  // namespace ancfl
-
-
-

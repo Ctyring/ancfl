@@ -1,4 +1,4 @@
-﻿#include "ancfl/http/http.h"
+#include "ancfl/http/http.h"
 #include "ancfl/log.h"
 void test() {
     ancfl::http::HttpRequest::ptr req(new ancfl::http::HttpRequest);
@@ -13,7 +13,8 @@ void test_response() {
     resp->setBody("hello world!");
     resp->setStatus(ancfl::http::HttpStatus::BAD_REQUEST);
     resp->setClose(false);
-    // 设置长连�?    resp->setHeader("Connection", "keep-alive");
+    // 设置长连接
+    resp->setHeader("Connection", "keep-alive");
     resp->dump(std::cout) << std::endl;
 }
 int main(int argc, char** argv) {

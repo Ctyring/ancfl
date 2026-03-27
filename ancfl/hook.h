@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file hook.h
  * @brief hook函数封装
  */
@@ -20,7 +20,8 @@ namespace ancfl {
  */
 bool is_hook_enable();
 /**
- * @brief 设置当前线程的hook状�? */
+ * @brief 设置当前线程的hook状态
+ */
 void set_hook_enable(bool flag);
 }  // namespace ancfl
 

@@ -1,4 +1,4 @@
-﻿#include "util.h"
+#include "util.h"
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <execinfo.h>
@@ -669,15 +669,16 @@ std::string StringUtil::UrlEncode(const std::string& str, bool space_as_plus) {
     std::string* ss = nullptr;
     const char* end = str.c_str() + str.length();
     for (const char* c = str.c_str(); c < end; ++c) {
-        // 判断是否是预留字�?        if (!CHAR_IS_UNRESERVED(*c)) {
+        // 判断是否是预留字符
+        if (!CHAR_IS_UNRESERVED(*c)) {
             if (!ss) {  // 第一次发现需要编码的字符
                 ss = new std::string;
                 ss->reserve(str.size() * 1.2);
                 ss->append(str.c_str(), c - str.c_str());
             }
-            if (*c == ' ' && space_as_plus) {  // 空格转换�?
+            if (*c == ' ' && space_as_plus) {  // 空格转换为+
                 ss->append(1, '+');
-            } else {  // 其他字符转换�?XX
+            } else {  // 其他字符转换为%XX
                 ss->append(1, '%');
                 ss->append(1, hexdigits[(uint8_t)*c >> 4]);
                 ss->append(1, hexdigits[*c & 0xf]);
@@ -689,7 +690,8 @@ std::string StringUtil::UrlEncode(const std::string& str, bool space_as_plus) {
     }
     if (!ss) {  // 如果没有发现需要编码的字符，则直接返回
         return str;
-    } else {  // 否则返回编码后的字符�?        std::string rt = *ss;
+    } else {  // 否则返回编码后的字符串
+        std::string rt = *ss;
         delete ss;
         return rt;
     }
@@ -699,13 +701,15 @@ std::string StringUtil::UrlDecode(const std::string& str, bool space_as_plus) {
     std::string* ss = nullptr;
     const char* end = str.c_str() + str.length();
     for (const char* c = str.c_str(); c < end; ++c) {
-        if (*c == '+' && space_as_plus) {  // +转换为空�?            if (!ss) {
+        if (*c == '+' && space_as_plus) {  // +转换为空格
+            if (!ss) {
                 ss = new std::string;
                 ss->append(str.c_str(), c - str.c_str());
             }
             ss->append(1, ' ');
         } else if (*c == '%' && (c + 2) < end && isxdigit(*(c + 1)) &&
-                   isxdigit(*(c + 2))) {  // %XX转换为字�?            if (!ss) {
+                   isxdigit(*(c + 2))) {  // %XX转换为字符
+            if (!ss) {
                 ss = new std::string;
                 ss->append(str.c_str(), c - str.c_str());
             }
@@ -719,7 +723,8 @@ std::string StringUtil::UrlDecode(const std::string& str, bool space_as_plus) {
     }
     if (!ss) {  // 如果没有发现需要解码的字符，则直接返回
         return str;
-    } else {  // 否则返回解码后的字符�?        std::string rt = *ss;
+    } else {  // 否则返回解码后的字符串
+        std::string rt = *ss;
         delete ss;
         return rt;
     }

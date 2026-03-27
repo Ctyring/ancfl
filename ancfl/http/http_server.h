@@ -1,13 +1,13 @@
 ﻿/**
  * @file http_server.h
- * @brief HTTP服务器封�? */
+ * @brief HTTP服务器封装 */
 
 #ifndef __ANCFL_HTTP_HTTP_SERVER_H__
 #define __ANCFL_HTTP_HTTP_SERVER_H__
 
+#include "ancfl/tcp_server.h"
 #include "http_session.h"
 #include "servlet.h"
-#include "ancfl/tcp_server.h"
 
 namespace ancfl {
 namespace http {
@@ -21,7 +21,11 @@ class HttpServer : public TcpServer {
     typedef std::shared_ptr<HttpServer> ptr;
 
     /**
-     * @brief 构造函�?     * @param[in] keepalive 是否长连�?     * @param[in] worker 工作调度�?     * @param[in] accept_worker 接收连接调度�?     */
+     * @brief 构造函数
+     * @param[in] keepalive 是否长连接
+     * @param[in] worker 工作调度器
+     * @param[in] accept_worker 接收连接调度器
+     */
     HttpServer(bool keepalive = false,
                ancfl::IOManager* worker = ancfl::IOManager::GetThis(),
                ancfl::IOManager* io_worker = ancfl::IOManager::GetThis(),
@@ -43,14 +47,13 @@ class HttpServer : public TcpServer {
     virtual void handleClient(Socket::ptr client) override;
 
    private:
-    /// 是否支持长连�?    bool m_isKeepalive;
-    /// Servlet分发�?    ServletDispatch::ptr m_dispatch;
+    /// 是否支持长连接
+    bool m_isKeepalive;
+    /// Servlet分发器
+    ServletDispatch::ptr m_dispatch;
 };
 
 }  // namespace http
 }  // namespace ancfl
 
 #endif
-
-
-

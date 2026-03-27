@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <stdint.h>
 #include <memory>
 #include <string>
@@ -11,12 +11,14 @@ class Uri {
 
     /**
      * @brief 创建Uri对象
-     * @param uri uri字符�?     * @return 解析成功返回Uri对象否则返回nullptr
+     * @param uri uri字符串
+     * @return 解析成功返回Uri对象否则返回nullptr
      */
     static Uri::ptr Create(const std::string& uri);
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     Uri();
 
     /**
@@ -91,16 +93,21 @@ class Uri {
     void setFragment(const std::string& v) { m_fragment = v; }
 
     /**
-     * @brief 设置端口�?     * @param v 端口
+     * @brief 设置端口号
+     * @param v 端口
      */
     void setPort(int32_t v) { m_port = v; }
 
     /**
-     * @brief 序列化到输出�?     * @param os 输出�?     * @return 输出�?     */
+     * @brief 序列化到输出流
+     * @param os 输出流
+     * @return 输出流
+     */
     std::ostream& dump(std::ostream& os) const;
 
     /**
-     * @brief 转成字符�?     */
+     * @brief 转成字符串
+     */
     std::string toString() const;
 
     /**
@@ -131,6 +138,3 @@ class Uri {
     int32_t m_port;
 };
 }  // namespace ancfl
-
-
-

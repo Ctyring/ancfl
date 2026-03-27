@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <stdint.h>
 #include "ancfl/config.h"
@@ -10,8 +10,10 @@ namespace http {
 #pragma pack(1)
 struct WSFrameHead {
     enum OPCODE {
-        /// 数据分片�?        CONTINUE = 0,
-        /// 文本�?        TEXT_FRAME = 1,
+        /// 数据分片帧
+        CONTINUE = 0,
+        /// 文本帧
+        TEXT_FRAME = 1,
         /// 二进制帧
         BIN_FRAME = 2,
         /// 断开连接

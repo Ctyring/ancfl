@@ -1,13 +1,15 @@
-﻿package ancfl.ns;
+package ancfl.ns;
 
 message Node {
     optional string ip = 1;     //ip地址
-    optional uint32 port = 2;   //端口�?    optional uint32 weight = 3; //权重
+    optional uint32 port = 2;   //端口
+    optional uint32 weight = 3; //权重
 }
 
 message RegisterInfo {
     optional string domain = 1; //域名
-    repeated uint32 cmds = 2;  //命令�?    optional Node node = 3;     //节点信息
+    repeated uint32 cmds = 2;  //命令
+    optional Node node = 3;     //节点信息
 }
 
 message RegisterRequest {

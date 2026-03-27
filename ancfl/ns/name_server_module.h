@@ -1,4 +1,4 @@
-﻿#ifndef __ANCFL_NS_NAME_SERVER_MODULE_H__
+#ifndef __ANCFL_NS_NAME_SERVER_MODULE_H__
 #define __ANCFL_NS_NAME_SERVER_MODULE_H__
 
 #include "ns_protocol.h"
@@ -62,7 +62,8 @@ class NameServerModule : public RockModule {
     ancfl::RWMutex m_mutex;
     std::map<ancfl::RockStream::ptr, NSClientInfo::ptr> m_sessions;
 
-    /// sessoin 关注的域�?    std::map<ancfl::RockStream::ptr, std::set<std::string> > m_queryDomains;
+    /// sessoin 关注的域名
+    std::map<ancfl::RockStream::ptr, std::set<std::string> > m_queryDomains;
     /// 域名对应关注的session
     std::map<std::string, std::set<ancfl::RockStream::ptr> > m_domainToSessions;
 };

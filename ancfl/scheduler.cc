@@ -1,4 +1,4 @@
-﻿#include "scheduler.h"
+#include "scheduler.h"
 #include "hook.h"
 #include "log.h"
 #include "macro.h"
@@ -17,14 +17,17 @@ Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
     if (use_caller) {
         // 初始化主协程
         ancfl::Fiber::GetThis();
-        // 因为当前线程已经初始化过，就去掉当前线程�?        --threads;
+        // 因为当前线程已经初始化过，就去掉当前线程数
+        --threads;
         // 每个线程只能有一个协程调度器
         ANCFL_ASSERT(GetThis() == nullptr);
         // 设置当前线程的协程调度器
         t_scheduler = this;
-        // 设置当前线程的协�?        m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 0, true));
+        // 设置当前线程的协程
+        m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 0, true));
         ancfl::Thread::SetName(m_name);
-        // 设置调度器所在协�?        t_scheduler_fiber = m_rootFiber.get();
+        // 设置调度器所在协程
+        t_scheduler_fiber = m_rootFiber.get();
         m_rootThread = ancfl::GetThreadId();
         m_threadIds.push_back(m_rootThread);
     } else {
@@ -138,7 +141,8 @@ void Scheduler::run() {
         {
             MutexType::Lock lock(m_mutex);
             auto it = m_fibers.begin();
-            // 遍历所有协�?            while (it != m_fibers.end()) {
+            // 遍历所有协程
+            while (it != m_fibers.end()) {
                 // 如果是别的线程的协程
                 if (it->thread != -1 && it->thread != ancfl::GetThreadId()) {
                     ++it;
@@ -153,7 +157,8 @@ void Scheduler::run() {
                     continue;
                 }
 
-                // 到这里说明找到了合适的协程，将其取�?                ft = *it;
+                // 到这里说明找到了合适的协程，将其取出
+                ft = *it;
                 m_fibers.erase(it++);
                 // 活跃线程数量+1
                 ++m_activeThreadCount;
@@ -168,24 +173,29 @@ void Scheduler::run() {
             tickle();
         }
 
-        // 判断协程状态是否合�?        if (ft.fiber && (ft.fiber->getState() != Fiber::TERM &&
+        // 判断协程状态是否合适
+        if (ft.fiber && (ft.fiber->getState() != Fiber::TERM &&
                          ft.fiber->getState() != Fiber::EXCEPT)) {
             // 如果协程状态合适，就切进来执行任务
             ft.fiber->swapIn();
-            // 协程切出，活跃线程数�?1
+            // 协程切出，活跃线程数-1
             --m_activeThreadCount;
 
-            // 这时，协程有可能是切换到后台并且是可执行状�?实际上目前代码没有这种情�?
+            // 这时，协程有可能是切换到后台并且是可执行状态，实际上目前代码没有这种情况
             if (ft.fiber->getState() == Fiber::READY) {
-                // 把协程加入调�?                schedule(ft.fiber);
+                // 把协程加入调度
+                schedule(ft.fiber);
             }
-            // 如果协程不是结束或者异常了，因为被切出了，所以状态改成等待�?            else if (ft.fiber->getState() != Fiber::TERM &&
+            // 如果协程不是结束或者异常了，因为被切出了，所以状态改成等待
+            else if (ft.fiber->getState() != Fiber::TERM &&
                      ft.fiber->getState() != Fiber::EXCEPT) {
                 ft.fiber->m_state = Fiber::HOLD;
             }
-            // 把数据释放了�?            ft.reset();
+            // 把数据释放了
+            ft.reset();
         }
-        // 如果只有回调函数，就需要调度器来创建协程执行任务�?        else if (ft.cb) {
+        // 如果只有回调函数，就需要调度器来创建协程执行任务
+        else if (ft.cb) {
             if (cb_fiber) {
                 // 重置协程
                 cb_fiber->reset(ft.cb);
@@ -193,7 +203,8 @@ void Scheduler::run() {
                 // 创建协程
                 cb_fiber.reset(new Fiber(ft.cb));
             }
-            // 这部分同上�?            ft.reset();
+            // 这部分同上
+            ft.reset();
             cb_fiber->swapIn();
             --m_activeThreadCount;
             if (cb_fiber->getState() == Fiber::READY) {
@@ -207,11 +218,13 @@ void Scheduler::run() {
                 cb_fiber.reset();
             }
         } else {
-            // 检查调度状态，如果是拿到了无效的协程数据，就继续调度�?            if (is_active) {
+            // 检查调度状态，如果是拿到了无效的协程数据，就继续调度
+            if (is_active) {
                 --m_activeThreadCount;
                 continue;
             }
-            // 如果是真的没任务了，就切换到idle协程�?            if (idle_fiber->getState() == Fiber::TERM) {
+            // 如果是真的没任务了，就切换到idle协程
+            if (idle_fiber->getState() == Fiber::TERM) {
                 // 如果连idle协程都退出了，就结束了，退出死循环
                 ANCFL_LOG_INFO(g_logger) << "idle fiber term";
                 break;
@@ -285,6 +298,3 @@ SchedulerSwitcher::~SchedulerSwitcher() {
 }
 
 }  // namespace ancfl
-
-
-

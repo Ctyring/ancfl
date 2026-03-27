@@ -1,14 +1,14 @@
-﻿/**
+/**
  * @file http_connection.h
  * @brief HTTP客户端类
  */
 #ifndef __ANCFL_HTTP_CONNECTION_H__
 #define __ANCFL_HTTP_CONNECTION_H__
 
-#include "http.h"
 #include "ancfl/streams/socket_stream.h"
 #include "ancfl/thread.h"
 #include "ancfl/uri.h"
+#include "http.h"
 
 #include <list>
 
@@ -22,7 +22,8 @@ struct HttpResult {
     /// 智能指针类型定义
     typedef std::shared_ptr<HttpResult> ptr;
     /**
-     * @brief 错误码定�?     */
+     * @brief 错误码定义
+     */
     enum class Error {
         /// 正常
         OK = 0,
@@ -32,7 +33,8 @@ struct HttpResult {
         INVALID_HOST = 2,
         /// 连接失败
         CONNECT_FAIL = 3,
-        /// 连接被对端关�?        SEND_CLOSE_BY_PEER = 4,
+        /// 连接被对端关闭
+        SEND_CLOSE_BY_PEER = 4,
         /// 发送请求产生Socket错误
         SEND_SOCKET_ERROR = 5,
         /// 超时
@@ -41,19 +43,25 @@ struct HttpResult {
         CREATE_SOCKET_ERROR = 7,
         /// 从连接池中取连接失败
         POOL_GET_CONNECTION = 8,
-        /// 无效的连�?        POOL_INVALID_CONNECTION = 9,
+        /// 无效的连接
+        POOL_INVALID_CONNECTION = 9,
     };
 
     /**
-     * @brief 构造函�?     * @param[in] _result 错误�?     * @param[in] _response HTTP响应结构�?     * @param[in] _error 错误描述
+     * @brief 构造函数
+     * @param[in] _result 错误码
+     * @param[in] _response HTTP响应结构
+     * @param[in] _error 错误描述
      */
     HttpResult(int _result,
                HttpResponse::ptr _response,
                const std::string& _error)
         : result(_result), response(_response), error(_error) {}
 
-    /// 错误�?    int result;
-    /// HTTP响应结构�?    HttpResponse::ptr response;
+    /// 错误码
+    int result;
+    /// HTTP响应结构
+    HttpResponse::ptr response;
     /// 错误描述
     std::string error;
 
@@ -76,7 +84,9 @@ class HttpConnection : public SocketStream {
      * @param[in] url 请求的url
      * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     static HttpResult::ptr DoGet(
         const std::string& url,
         uint64_t timeout_ms,
@@ -85,9 +95,12 @@ class HttpConnection : public SocketStream {
 
     /**
      * @brief 发送HTTP的GET请求
-     * @param[in] uri URI结构�?     * @param[in] timeout_ms 超时时间(毫秒)
+     * @param[in] uri URI结构
+     * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     static HttpResult::ptr DoGet(
         Uri::ptr uri,
         uint64_t timeout_ms,
@@ -99,7 +112,9 @@ class HttpConnection : public SocketStream {
      * @param[in] url 请求的url
      * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     static HttpResult::ptr DoPost(
         const std::string& url,
         uint64_t timeout_ms,
@@ -108,9 +123,12 @@ class HttpConnection : public SocketStream {
 
     /**
      * @brief 发送HTTP的POST请求
-     * @param[in] uri URI结构�?     * @param[in] timeout_ms 超时时间(毫秒)
+     * @param[in] uri URI结构
+     * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     static HttpResult::ptr DoPost(
         Uri::ptr uri,
         uint64_t timeout_ms,
@@ -123,7 +141,9 @@ class HttpConnection : public SocketStream {
      * @param[in] uri 请求的url
      * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     static HttpResult::ptr DoRequest(
         HttpMethod method,
         const std::string& url,
@@ -134,9 +154,12 @@ class HttpConnection : public SocketStream {
     /**
      * @brief 发送HTTP请求
      * @param[in] method 请求类型
-     * @param[in] uri URI结构�?     * @param[in] timeout_ms 超时时间(毫秒)
+     * @param[in] uri URI结构
+     * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     static HttpResult::ptr DoRequest(
         HttpMethod method,
         Uri::ptr uri,
@@ -146,14 +169,21 @@ class HttpConnection : public SocketStream {
 
     /**
      * @brief 发送HTTP请求
-     * @param[in] req 请求结构�?     * @param[in] uri URI结构�?     * @param[in] timeout_ms 超时时间(毫秒)
-     * @return 返回HTTP结果结构�?     */
+     * @param[in] req 请求结构
+     * @param[in] uri URI结构
+     * @param[in]
+     * timeout_ms 超时时间(毫秒)
+     * @return 返回HTTP结果结构
+     */
     static HttpResult::ptr DoRequest(HttpRequest::ptr req,
                                      Uri::ptr uri,
                                      uint64_t timeout_ms);
 
     /**
-     * @brief 构造函�?     * @param[in] sock Socket�?     * @param[in] owner 是否掌握所有权
+     * @brief 构造函数
+     * @param[in] sock Socket
+     * @param[in] owner
+     * 是否掌握所有权
      */
     HttpConnection(Socket::ptr sock, bool owner = true);
 
@@ -204,7 +234,9 @@ class HttpConnectionPool {
      * @param[in] url 请求的url
      * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     HttpResult::ptr doGet(
         const std::string& url,
         uint64_t timeout_ms,
@@ -213,9 +245,12 @@ class HttpConnectionPool {
 
     /**
      * @brief 发送HTTP的GET请求
-     * @param[in] uri URI结构�?     * @param[in] timeout_ms 超时时间(毫秒)
+     * @param[in] uri URI结构
+     * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     HttpResult::ptr doGet(
         Uri::ptr uri,
         uint64_t timeout_ms,
@@ -227,7 +262,9 @@ class HttpConnectionPool {
      * @param[in] url 请求的url
      * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     HttpResult::ptr doPost(
         const std::string& url,
         uint64_t timeout_ms,
@@ -236,9 +273,12 @@ class HttpConnectionPool {
 
     /**
      * @brief 发送HTTP的POST请求
-     * @param[in] uri URI结构�?     * @param[in] timeout_ms 超时时间(毫秒)
+     * @param[in] uri URI结构
+     * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     HttpResult::ptr doPost(
         Uri::ptr uri,
         uint64_t timeout_ms,
@@ -251,7 +291,9 @@ class HttpConnectionPool {
      * @param[in] uri 请求的url
      * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     HttpResult::ptr doRequest(
         HttpMethod method,
         const std::string& url,
@@ -262,9 +304,12 @@ class HttpConnectionPool {
     /**
      * @brief 发送HTTP请求
      * @param[in] method 请求类型
-     * @param[in] uri URI结构�?     * @param[in] timeout_ms 超时时间(毫秒)
+     * @param[in] uri URI结构
+     * @param[in] timeout_ms 超时时间(毫秒)
      * @param[in] headers HTTP请求头部参数
-     * @param[in] body 请求消息�?     * @return 返回HTTP结果结构�?     */
+     * @param[in] body 请求消息体
+     * @return 返回HTTP结果结构
+     */
     HttpResult::ptr doRequest(
         HttpMethod method,
         Uri::ptr uri,
@@ -274,8 +319,10 @@ class HttpConnectionPool {
 
     /**
      * @brief 发送HTTP请求
-     * @param[in] req 请求结构�?     * @param[in] timeout_ms 超时时间(毫秒)
-     * @return 返回HTTP结果结构�?     */
+     * @param[in] req 请求结构
+     * @param[in] timeout_ms 超时时间(毫秒)
+     * @return 返回HTTP结果结构
+     */
     HttpResult::ptr doRequest(HttpRequest::ptr req, uint64_t timeout_ms);
 
    private:
@@ -299,6 +346,3 @@ class HttpConnectionPool {
 }  // namespace ancfl
 
 #endif
-
-
-

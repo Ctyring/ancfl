@@ -1,4 +1,4 @@
-﻿#include "rock_protocol.h"
+#include "rock_protocol.h"
 #include "ancfl/config.h"
 #include "ancfl/endian.h"
 #include "ancfl/log.h"
@@ -176,7 +176,8 @@ Message::ptr RockMessageDecoder::parseFrom(Stream::ptr stream) {
             return nullptr;
         }
 
-        // 校验版本�?        if (header.version != 0x1) {
+        // 校验版本号
+        if (header.version != 0x1) {
             ANCFL_LOG_ERROR(g_logger)
                 << "RockMessageDecoder head.version != 0x1";
             return nullptr;
@@ -209,7 +210,8 @@ Message::ptr RockMessageDecoder::parseFrom(Stream::ptr stream) {
                 return nullptr;
             }
 
-            // 刷新缓冲�?            if (zstream->flush() != Z_OK) {
+            // 刷新缓冲区
+            if (zstream->flush() != Z_OK) {
                 ANCFL_LOG_ERROR(g_logger)
                     << "RockMessageDecoder ungzip flush error";
                 return nullptr;
@@ -287,6 +289,3 @@ int32_t RockMessageDecoder::serializeTo(Stream::ptr stream, Message::ptr msg) {
 }
 
 }  // namespace ancfl
-
-
-

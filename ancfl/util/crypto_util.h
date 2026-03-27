@@ -1,6 +1,6 @@
-﻿/**
+/**
  * @file crypto_util.h
- * @brief 加解密工具函�? */
+ * @brief 加解密工具函数 */
 #ifndef __ANCFL_UTIL_CRYPTO_UTIL_H__
 #define __ANCFL_UTIL_CRYPTO_UTIL_H__
 

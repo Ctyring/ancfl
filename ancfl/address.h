@@ -1,6 +1,6 @@
-﻿/**
+/**
  * @file address.h
- * @brief 网络地址的封�?IPv4,IPv6,Unix)
+ * @brief 网络地址的封装(IPv4,IPv6,Unix)
  */
 #ifndef __ANCFL_ADDRESS_H__
 #define __ANCFL_ADDRESS_H__
@@ -21,7 +21,8 @@ namespace ancfl {
 class IPAddress;
 
 /**
- * @brief 网络地址的基�?抽象�? */
+ * @brief 网络地址的基类(抽象类)
+ */
 class Address {
    public:
     typedef std::shared_ptr<Address> ptr;
@@ -29,17 +30,20 @@ class Address {
     /**
      * @brief 通过sockaddr指针创建Address
      * @param[in] addr sockaddr指针
-     * @param[in] addrlen sockaddr的长�?     * @return 返回和sockaddr相匹配的Address,失败返回nullptr
+     * @param[in] addrlen sockaddr的长度
+     * @return 返回和sockaddr相匹配的Address,失败返回nullptr
      */
     static Address::ptr Create(const sockaddr* addr, socklen_t addrlen);
 
     /**
      * @brief 通过host地址返回对应条件的所有Address
      * @param[out] result 保存满足条件的Address
-     * @param[in] host 域名,服务器名�?举例: www.ancfl.top[:80]
-     * (方括号为可选内�?
-     * @param[in] family 协议�?AF_INT, AF_INT6, AF_UNIX)
-     * @param[in] type socketl类型SOCK_STREAM、SOCK_DGRAM �?     * @param[in] protocol 协议,IPPROTO_TCP、IPPROTO_UDP �?     * @return 返回是否转换成功
+     * @param[in] host 域名,服务器名称,举例: www.ancfl.top[:80]
+     * (方括号为可选内容
+     * @param[in] family 协议族,AF_INT, AF_INT6, AF_UNIX)
+     * @param[in] type socket类型SOCK_STREAM、SOCK_DGRAM 等
+     * @param[in] protocol 协议,IPPROTO_TCP、IPPROTO_UDP 等
+     * @return 返回是否转换成功
      */
     static bool Lookup(std::vector<Address::ptr>& result,
                        const std::string& host,
@@ -48,10 +52,12 @@ class Address {
                        int protocol = 0);
     /**
      * @brief 通过host地址返回对应条件的任意Address
-     * @param[in] host 域名,服务器名�?举例: www.ancfl.top[:80]
-     * (方括号为可选内�?
-     * @param[in] family 协议�?AF_INT, AF_INT6, AF_UNIX)
-     * @param[in] type socketl类型SOCK_STREAM、SOCK_DGRAM �?     * @param[in] protocol 协议,IPPROTO_TCP、IPPROTO_UDP �?     * @return 返回满足条件的任意Address,失败返回nullptr
+     * @param[in] host 域名,服务器名称,举例: www.ancfl.top[:80]
+     * (方括号为可选内容
+     * @param[in] family 协议族,AF_INT, AF_INT6, AF_UNIX)
+     * @param[in] type socket类型SOCK_STREAM、SOCK_DGRAM 等
+     * @param[in] protocol 协议,IPPROTO_TCP、IPPROTO_UDP 等
+     * @return 返回满足条件的任意Address,失败返回nullptr
      */
     static Address::ptr LookupAny(const std::string& host,
                                   int family = AF_INET,
@@ -59,10 +65,12 @@ class Address {
                                   int protocol = 0);
     /**
      * @brief 通过host地址返回对应条件的任意IPAddress
-     * @param[in] host 域名,服务器名�?举例: www.ancfl.top[:80]
-     * (方括号为可选内�?
-     * @param[in] family 协议�?AF_INT, AF_INT6, AF_UNIX)
-     * @param[in] type socketl类型SOCK_STREAM、SOCK_DGRAM �?     * @param[in] protocol 协议,IPPROTO_TCP、IPPROTO_UDP �?     * @return 返回满足条件的任意IPAddress,失败返回nullptr
+     * @param[in] host 域名,服务器名称,举例: www.ancfl.top[:80]
+     * (方括号为可选内容
+     * @param[in] family 协议族,AF_INT, AF_INT6, AF_UNIX)
+     * @param[in] type socket类型SOCK_STREAM、SOCK_DGRAM 等
+     * @param[in] protocol 协议,IPPROTO_TCP、IPPROTO_UDP 等
+     * @return 返回满足条件的任意IPAddress,失败返回nullptr
      */
     static std::shared_ptr<IPAddress> LookupAnyIPAddress(
         const std::string& host,
@@ -71,18 +79,19 @@ class Address {
         int protocol = 0);
 
     /**
-     * @brief 返回本机所有网卡的<网卡�? 地址, 子网掩码位数>
+     * @brief 返回本机所有网卡的<网卡名, 地址, 子网掩码位数>
      * @param[out] result 保存本机所有地址
-     * @param[in] family 协议�?AF_INT, AF_INT6, AF_UNIX)
+     * @param[in] family 协议族,AF_INT, AF_INT6, AF_UNIX)
      * @return 是否获取成功
      */
     static bool GetInterfaceAddresses(
         std::multimap<std::string, std::pair<Address::ptr, uint32_t> >& result,
         int family = AF_INET);
     /**
-     * @brief 获取指定网卡的地址和子网掩码位�?     * @param[out] result 保存指定网卡所有地址
+     * @brief 获取指定网卡的地址和子网掩码位数
+     * @param[out] result 保存指定网卡所有地址
      * @param[in] iface 网卡名称
-     * @param[in] family 协议�?AF_INT, AF_INT6, AF_UNIX)
+     * @param[in] family 协议族,AF_INT, AF_INT6, AF_UNIX)
      * @return 是否获取成功
      */
     static bool GetInterfaceAddresses(
@@ -91,11 +100,13 @@ class Address {
         int family = AF_INET);
 
     /**
-     * @brief 虚析构函�?     */
+     * @brief 虚析构函数
+     */
     virtual ~Address() {}
 
     /**
-     * @brief 返回协议�?     */
+     * @brief 返回协议族
+     */
     int getFamily() const;
 
     /**
@@ -109,7 +120,8 @@ class Address {
     virtual sockaddr* getAddr() = 0;
 
     /**
-     * @brief 返回sockaddr的长�?     */
+     * @brief 返回sockaddr的长度
+     */
     virtual socklen_t getAddrLen() const = 0;
 
     /**
@@ -123,7 +135,8 @@ class Address {
     std::string toString() const;
 
     /**
-     * @brief 小于号比较函�?     */
+     * @brief 小于号比较函数
+     */
     bool operator<(const Address& rhs) const;
 
     /**
@@ -132,20 +145,23 @@ class Address {
     bool operator==(const Address& rhs) const;
 
     /**
-     * @brief 不等于函�?     */
+     * @brief 不等于函数
+     */
     bool operator!=(const Address& rhs) const;
 };
 
 /**
- * @brief IP地址的基�? */
+ * @brief IP地址的基类
+ */
 class IPAddress : public Address {
    public:
     typedef std::shared_ptr<IPAddress> ptr;
 
     /**
      * @brief 通过域名,IP,服务器名创建IPAddress
-     * @param[in] address 域名,IP,服务器名�?举例: www.ancfl.top
-     * @param[in] port 端口�?     * @return 调用成功返回IPAddress,失败返回nullptr
+     * @param[in] address 域名,IP,服务器名称,举例: www.ancfl.top
+     * @param[in] port 端口号
+     * @return 调用成功返回IPAddress,失败返回nullptr
      */
     static IPAddress::ptr Create(const char* address, uint16_t port = 0);
 
@@ -157,7 +173,8 @@ class IPAddress : public Address {
     virtual IPAddress::ptr broadcastAddress(uint32_t prefix_len) = 0;
 
     /**
-     * @brief 获取该地址的网�?     * @param[in] prefix_len 子网掩码位数
+     * @brief 获取该地址的网络
+     * @param[in] prefix_len 子网掩码位数
      * @return 调用成功返回IPAddress,失败返回nullptr
      */
     virtual IPAddress::ptr networkAddress(uint32_t prefix_len) = 0;
@@ -170,11 +187,13 @@ class IPAddress : public Address {
     virtual IPAddress::ptr subnetMask(uint32_t prefix_len) = 0;
 
     /**
-     * @brief 返回端口�?     */
+     * @brief 返回端口号
+     */
     virtual uint32_t getPort() const = 0;
 
     /**
-     * @brief 设置端口�?     */
+     * @brief 设置端口号
+     */
     virtual void setPort(uint16_t v) = 0;
 };
 
@@ -187,20 +206,23 @@ class IPv4Address : public IPAddress {
 
     /**
      * @brief 使用点分十进制地址创建IPv4Address
-     * @param[in] address 点分十进制地址,�?192.168.1.1
-     * @param[in] port 端口�?     * @return 返回IPv4Address,失败返回nullptr
+     * @param[in] address 点分十进制地址,如: 192.168.1.1
+     * @param[in] port 端口号
+     * @return 返回IPv4Address,失败返回nullptr
      */
     static IPv4Address::ptr Create(const char* address, uint16_t port = 0);
 
     /**
      * @brief 通过sockaddr_in构造IPv4Address
-     * @param[in] address sockaddr_in结构�?     */
+     * @param[in] address sockaddr_in结构体
+     */
     IPv4Address(const sockaddr_in& address);
 
     /**
      * @brief 通过二进制地址构造IPv4Address
      * @param[in] address 二进制地址address
-     * @param[in] port 端口�?     */
+     * @param[in] port 端口号
+     */
     IPv4Address(uint32_t address = INADDR_ANY, uint16_t port = 0);
 
     const sockaddr* getAddr() const override;
@@ -226,16 +248,20 @@ class IPv6Address : public IPAddress {
     typedef std::shared_ptr<IPv6Address> ptr;
     /**
      * @brief 通过IPv6地址字符串构造IPv6Address
-     * @param[in] address IPv6地址字符�?     * @param[in] port 端口�?     */
+     * @param[in] address IPv6地址字符串
+     * @param[in] port 端口号
+     */
     static IPv6Address::ptr Create(const char* address, uint16_t port = 0);
 
     /**
-     * @brief 无参构造函�?     */
+     * @brief 无参构造函数
+     */
     IPv6Address();
 
     /**
      * @brief 通过sockaddr_in6构造IPv6Address
-     * @param[in] address sockaddr_in6结构�?     */
+     * @param[in] address sockaddr_in6结构体
+     */
     IPv6Address(const sockaddr_in6& address);
 
     /**
@@ -267,7 +293,8 @@ class UnixAddress : public Address {
     typedef std::shared_ptr<UnixAddress> ptr;
 
     /**
-     * @brief 无参构造函�?     */
+     * @brief 无参构造函数
+     */
     UnixAddress();
 
     /**
@@ -298,21 +325,3 @@ class UnknownAddress : public Address {
     UnknownAddress(const sockaddr& addr);
     const sockaddr* getAddr() const override;
     sockaddr* getAddr() override;
-    socklen_t getAddrLen() const override;
-    std::ostream& insert(std::ostream& os) const override;
-
-   private:
-    sockaddr m_addr;
-};
-
-/**
- * @brief 流式输出Address
- */
-std::ostream& operator<<(std::ostream& os, const Address& addr);
-
-}  // namespace ancfl
-
-#endif
-
-
-

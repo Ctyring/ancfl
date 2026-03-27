@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file socket.h
  * @brief Socket封装
  */
@@ -17,7 +17,8 @@
 namespace ancfl {
 
 /**
- * @brief Socket封装�? */
+ * @brief Socket封装类
+ */
 class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
    public:
     typedef std::shared_ptr<Socket> ptr;
@@ -34,7 +35,8 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
     };
 
     /**
-     * @brief Socket协议�?     */
+     * @brief Socket协议簇
+     */
     enum Family {
         /// IPv4 socket
         IPv4 = AF_INET,
@@ -87,7 +89,9 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
     static Socket::ptr CreateUnixUDPSocket();
 
     /**
-     * @brief Socket构造函�?     * @param[in] family 协议�?     * @param[in] type 类型
+     * @brief Socket构造函数
+     * @param[in] family 协议簇
+     * @param[in] type 类型
      * @param[in] protocol 协议
      */
     Socket(int family, int type, int protocol = 0);
@@ -98,12 +102,12 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
     virtual ~Socket();
 
     /**
-     * @brief 获取发送超时时�?毫秒)
+     * @brief 获取发送超时时间(毫秒)
      */
     int64_t getSendTimeout();
 
     /**
-     * @brief 设置发送超时时�?毫秒)
+     * @brief 设置发送超时时间(毫秒)
      */
     void setSendTimeout(int64_t v);
 
@@ -169,8 +173,9 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
 
     /**
      * @brief 监听socket
-     * @param[in] backlog 未完成连接队列的最大长�?     * @result 返回监听是否成功
-     * @pre 必须�?bind 成功
+     * @param[in] backlog 未完成连接队列的最大长度
+     * @result 返回监听是否成功
+     * @pre 必须 bind 成功
      */
     virtual bool listen(int backlog = SOMAXCONN);
 
@@ -180,30 +185,39 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
     virtual bool close();
 
     /**
-     * @brief 发送数�?     * @param[in] buffer 待发送数据的内存
+     * @brief 发送数据
+     * @param[in] buffer 待发送数据的内存
      * @param[in] length 待发送数据的长度
-     * @param[in] flags 标志�?     * @return
+     * @param[in] flags 标志位
+     * @return
      *      @retval >0 发送成功对应大小的数据
-     *      @retval =0 socket被关�?     *      @retval <0 socket出错
+     *      @retval =0 socket被关闭
+     *      @retval <0 socket出错
      */
     virtual int send(const void* buffer, size_t length, int flags = 0);
 
     /**
-     * @brief 发送数�?     * @param[in] buffers 待发送数据的内存(iovec数组)
+     * @brief 发送数据
+     * @param[in] buffers 待发送数据的内存(iovec数组)
      * @param[in] length 待发送数据的长度(iovec长度)
-     * @param[in] flags 标志�?     * @return
+     * @param[in] flags 标志位
+     * @return
      *      @retval >0 发送成功对应大小的数据
-     *      @retval =0 socket被关�?     *      @retval <0 socket出错
+     *      @retval =0 socket被关闭
+     *      @retval <0 socket出错
      */
     virtual int send(const iovec* buffers, size_t length, int flags = 0);
 
     /**
-     * @brief 发送数�?     * @param[in] buffer 待发送数据的内存
+     * @brief 发送数据
+     * @param[in] buffer 待发送数据的内存
      * @param[in] length 待发送数据的长度
      * @param[in] to 发送的目标地址
-     * @param[in] flags 标志�?     * @return
+     * @param[in] flags 标志位
+     * @return
      *      @retval >0 发送成功对应大小的数据
-     *      @retval =0 socket被关�?     *      @retval <0 socket出错
+     *      @retval =0 socket被关闭
+     *      @retval <0 socket出错
      */
     virtual int sendTo(const void* buffer,
                        size_t length,
@@ -211,12 +225,15 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
                        int flags = 0);
 
     /**
-     * @brief 发送数�?     * @param[in] buffers 待发送数据的内存(iovec数组)
+     * @brief 发送数据
+     * @param[in] buffers 待发送数据的内存(iovec数组)
      * @param[in] length 待发送数据的长度(iovec长度)
      * @param[in] to 发送的目标地址
-     * @param[in] flags 标志�?     * @return
+     * @param[in] flags 标志位
+     * @return
      *      @retval >0 发送成功对应大小的数据
-     *      @retval =0 socket被关�?     *      @retval <0 socket出错
+     *      @retval =0 socket被关闭
+     *      @retval <0 socket出错
      */
     virtual int sendTo(const iovec* buffers,
                        size_t length,
@@ -225,28 +242,38 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
 
     /**
      * @brief 接受数据
-     * @param[out] buffer 接收数据的内�?     * @param[in] length 接收数据的内存大�?     * @param[in] flags 标志�?     * @return
+     * @param[out] buffer 接收数据的内存
+     * @param[in] length 接收数据的内存大小
+     * @param[in] flags 标志位
+     * @return
      *      @retval >0 接收到对应大小的数据
-     *      @retval =0 socket被关�?     *      @retval <0 socket出错
+     *      @retval =0 socket被关闭
+     *      @retval <0 socket出错
      */
     virtual int recv(void* buffer, size_t length, int flags = 0);
 
     /**
      * @brief 接受数据
-     * @param[out] buffers 接收数据的内�?iovec数组)
-     * @param[in] length 接收数据的内存大�?iovec数组长度)
-     * @param[in] flags 标志�?     * @return
+     * @param[out] buffers 接收数据的内存(iovec数组)
+     * @param[in] length 接收数据的内存大小(iovec数组长度)
+     * @param[in] flags 标志位
+     * @return
      *      @retval >0 接收到对应大小的数据
-     *      @retval =0 socket被关�?     *      @retval <0 socket出错
+     *      @retval =0 socket被关闭
+     *      @retval <0 socket出错
      */
     virtual int recv(iovec* buffers, size_t length, int flags = 0);
 
     /**
      * @brief 接受数据
-     * @param[out] buffer 接收数据的内�?     * @param[in] length 接收数据的内存大�?     * @param[out] from 发送端地址
-     * @param[in] flags 标志�?     * @return
+     * @param[out] buffer 接收数据的内存
+     * @param[in] length 接收数据的内存大小
+     * @param[out] from 发送端地址
+     * @param[in] flags 标志位
+     * @return
      *      @retval >0 接收到对应大小的数据
-     *      @retval =0 socket被关�?     *      @retval <0 socket出错
+     *      @retval =0 socket被关闭
+     *      @retval <0 socket出错
      */
     virtual int recvFrom(void* buffer,
                          size_t length,
@@ -255,12 +282,14 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
 
     /**
      * @brief 接受数据
-     * @param[out] buffers 接收数据的内�?iovec数组)
-     * @param[in] length 接收数据的内存大�?iovec数组长度)
+     * @param[out] buffers 接收数据的内存(iovec数组)
+     * @param[in] length 接收数据的内存大小(iovec数组长度)
      * @param[out] from 发送端地址
-     * @param[in] flags 标志�?     * @return
+     * @param[in] flags 标志位
+     * @return
      *      @retval >0 接收到对应大小的数据
-     *      @retval =0 socket被关�?     *      @retval <0 socket出错
+     *      @retval =0 socket被关闭
+     *      @retval <0 socket出错
      */
     virtual int recvFrom(iovec* buffers,
                          size_t length,
@@ -278,7 +307,8 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
     Address::ptr getLocalAddress();
 
     /**
-     * @brief 获取协议�?     */
+     * @brief 获取协议簇
+     */
     int getFamily() const { return m_family; }
 
     /**
@@ -307,7 +337,8 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
     int getError();
 
     /**
-     * @brief 输出信息到流�?     */
+     * @brief 输出信息到流中
+     */
     virtual std::ostream& dump(std::ostream& os) const;
 
     virtual std::string toString() const;
@@ -318,11 +349,13 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
     int getSocket() const { return m_sock; }
 
     /**
-     * @brief 取消�?     */
+     * @brief 取消读
+     */
     bool cancelRead();
 
     /**
-     * @brief 取消�?     */
+     * @brief 取消写
+     */
     bool cancelWrite();
 
     /**
@@ -331,7 +364,8 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
     bool cancelAccept();
 
     /**
-     * @brief 取消所有事�?     */
+     * @brief 取消所有事件
+     */
     bool cancelAll();
 
    protected:
@@ -353,7 +387,8 @@ class Socket : public std::enable_shared_from_this<Socket>, Noncopyable {
    protected:
     /// socket句柄
     int m_sock;
-    /// 协议�?    int m_family;
+    /// 协议簇
+    int m_family;
     /// 类型
     int m_type;
     /// 协议
@@ -405,7 +440,8 @@ class SSLSocket : public Socket {
                          int flags = 0) override;
     /**
      * @brief 加载证书
-     * @param[in] cert_file 证书�?     * @param[in] key_file 秘钥
+     * @param[in] cert_file 证书文件
+     * @param[in] key_file 秘钥
      */
     bool loadCertificates(const std::string& cert_file,
                           const std::string& key_file);
@@ -421,12 +457,11 @@ class SSLSocket : public Socket {
 
 /**
  * @brief 流式输出socket
- * @param[in, out] os 输出�? * @param[in] sock Socket�? */
+ * @param[in, out] os 输出流
+ * @param[in] sock Socket类
+ */
 std::ostream& operator<<(std::ostream& os, const Socket& sock);
 
 }  // namespace ancfl
 
 #endif
-
-
-

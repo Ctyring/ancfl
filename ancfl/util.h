@@ -1,6 +1,6 @@
-﻿/**
+/**
  * @file util.h
- * @brief 常用的工具函�? */
+ * @brief 常用的工具函数 */
 #ifndef __ANCFL_UTIL_H__
 #define __ANCFL_UTIL_H__
 
@@ -37,21 +37,26 @@ uint32_t GetFiberId();
 
 /**
  * @brief 获取当前的调用栈
- * @param[out] bt 保存调用�? * @param[in] size 最多返回层�? * @param[in] skip 跳过栈顶的层�? */
+ * @param[out] bt 保存调用栈
+ * @param[in] size 最多返回层数
+ * @param[in] skip 跳过栈顶的层数 */
 void Backtrace(std::vector<std::string>& bt, int size = 64, int skip = 1);
 
 /**
- * @brief 获取当前栈信息的字符�? * @param[in] size 栈的最大层�? * @param[in] skip 跳过栈顶的层�? * @param[in] prefix 栈信息前输出的内�? */
+ * @brief 获取当前栈信息的字符串
+ * @param[in] size 栈的最大层数
+ * @param[in] skip 跳过栈顶的层数
+ * @param[in] prefix 栈信息前输出的内容 */
 std::string BacktraceToString(int size = 64,
                               int skip = 2,
                               const std::string& prefix = "");
 
 /**
- * @brief 获取当前时间的毫�? */
+ * @brief 获取当前时间的毫秒 */
 uint64_t GetCurrentMS();
 
 /**
- * @brief 获取当前时间的微�? */
+ * @brief 获取当前时间的微秒 */
 uint64_t GetCurrentUS();
 
 std::string ToUpper(const std::string& name);
@@ -294,7 +299,7 @@ std::string Join(Iter begin, Iter end, const std::string& tag) {
 
 //[begin, end)
 // if rt > 0, 存在,返回对应index
-//   rt < 0, 不存�?返回对于应该存在�?(index + 1)
+//   rt < 0, 不存在,返回对于应该存在的位置(index + 1)
 template <class T>
 int BinarySearch(const T* arr, int length, const T& v) {
     int m = 0;
@@ -452,6 +457,3 @@ void Slice(std::vector<std::vector<T> >& dst,
 }  // namespace ancfl
 
 #endif
-
-
-

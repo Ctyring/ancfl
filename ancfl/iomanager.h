@@ -1,6 +1,7 @@
-﻿/**
+/**
  * @file iomanager.h
- * @brief 基于Epoll的IO协程调度�? */
+ * @brief 基于Epoll的IO协程调度器
+ */
 #ifndef __ANCFL_IOMANAGER_H__
 #define __ANCFL_IOMANAGER_H__
 
@@ -10,7 +11,8 @@
 namespace ancfl {
 
 /**
- * @brief 基于Epoll的IO协程调度�? */
+ * @brief 基于Epoll的IO协程调度器
+ */
 class IOManager : public Scheduler, public TimerManager {
    public:
     typedef std::shared_ptr<IOManager> ptr;
@@ -20,10 +22,11 @@ class IOManager : public Scheduler, public TimerManager {
      * @brief IO事件
      */
     enum Event {
-        /// 无事�?        NONE = 0x0,
-        /// 读事�?EPOLLIN)
+        /// 无事件
+        NONE = 0x0,
+        /// 读事件(EPOLLIN)
         READ = 0x1,
-        /// 写事�?EPOLLOUT)
+        /// 写事件(EPOLLOUT)
         WRITE = 0x4,
     };
 
@@ -41,7 +44,8 @@ class IOManager : public Scheduler, public TimerManager {
             Scheduler* scheduler = nullptr;
             /// 事件协程
             Fiber::ptr fiber;
-            /// 事件的回调函�?            std::function<void()> cb;
+            /// 事件的回调函数
+            std::function<void()> cb;
         };
 
         /**
@@ -52,7 +56,8 @@ class IOManager : public Scheduler, public TimerManager {
         EventContext& getContext(Event event);
 
         /**
-         * @brief 重置事件上下�?         * @param[in, out] ctx 待重置的上下文类
+         * @brief 重置事件上下文
+         * @param[in, out] ctx 待重置的上下文类
          */
         void resetContext(EventContext& ctx);
 
@@ -66,16 +71,21 @@ class IOManager : public Scheduler, public TimerManager {
         EventContext read;
         /// 写事件上下文
         EventContext write;
-        /// 事件关联的句�?        int fd = 0;
-        /// 当前的事�?        Event events = NONE;
+        /// 事件关联的句柄
+        int fd = 0;
+        /// 当前的事件
+        Event events = NONE;
         /// 事件的Mutex
         MutexType mutex;
     };
 
    public:
     /**
-     * @brief 构造函�?     * @param[in] threads 线程数量
-     * @param[in] use_caller 是否将调用线程包含进�?     * @param[in] name 调度器的名称
+     * @brief 构造函数
+     * @param[in] threads 线程数量
+     * @param[in] use_caller 是否将调用线程包含进来
+     * @param[in] name
+     * 调度器的名称
      */
     IOManager(size_t threads = 1,
               bool use_caller = true,
@@ -107,11 +117,13 @@ class IOManager : public Scheduler, public TimerManager {
      * @brief 取消事件
      * @param[in] fd socket句柄
      * @param[in] event 事件类型
-     * @attention 如果事件存在则触发事�?     */
+     * @attention 如果事件存在则触发事件
+     */
     bool cancelEvent(int fd, Event event);
 
     /**
-     * @brief 取消所有事�?     * @param[in] fd socket句柄
+     * @brief 取消所有事件
+     * @param[in] fd socket句柄
      */
     bool cancelAll(int fd);
 
@@ -144,7 +156,8 @@ class IOManager : public Scheduler, public TimerManager {
     int m_epfd = 0;
     /// pipe 文件句柄
     int m_tickleFds[2];
-    /// 当前等待执行的事件数�?    std::atomic<size_t> m_pendingEventCount = {0};
+    /// 当前等待执行的事件数量
+    std::atomic<size_t> m_pendingEventCount = {0};
     /// IOManager的Mutex
     RWMutexType m_mutex;
     /// socket事件上下文的容器
@@ -154,6 +167,3 @@ class IOManager : public Scheduler, public TimerManager {
 }  // namespace ancfl
 
 #endif
-
-
-

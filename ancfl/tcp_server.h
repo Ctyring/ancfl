@@ -103,12 +103,14 @@ class LexicalCast<TcpServerConf, std::string> {
 };
 
 /**
- * @brief TCP服务器封�? */
+ * @brief TCP服务器封装 */
 class TcpServer : public std::enable_shared_from_this<TcpServer>, Noncopyable {
    public:
     typedef std::shared_ptr<TcpServer> ptr;
     /**
-     * @brief 构造函�?     * @param[in] worker socket客户端工作的协程调度�?     * @param[in] accept_worker 服务器socket执行接收socket连接的协程调度器
+     * @brief 构造函数
+     * @param[in] worker socket客户端工作的协程调度器
+     * @param[in] accept_worker 服务器socket执行接收socket连接的协程调度器
      */
     TcpServer(ancfl::IOManager* worker = ancfl::IOManager::GetThis(),
               ancfl::IOManager* io_worker = ancfl::IOManager::GetThis(),
@@ -139,7 +141,8 @@ class TcpServer : public std::enable_shared_from_this<TcpServer>, Noncopyable {
                           const std::string& key_file);
     /**
      * @brief 启动服务
-     * @pre 需要bind成功后执�?     */
+     * @pre 需要bind成功后执行
+     */
     virtual bool start();
 
     /**
@@ -153,7 +156,8 @@ class TcpServer : public std::enable_shared_from_this<TcpServer>, Noncopyable {
     uint64_t getRecvTimeout() const { return m_recvTimeout; }
 
     /**
-     * @brief 返回服务器名�?     */
+     * @brief 返回服务器名称
+     */
     std::string getName() const { return m_name; }
 
     /**
@@ -162,7 +166,8 @@ class TcpServer : public std::enable_shared_from_this<TcpServer>, Noncopyable {
     void setRecvTimeout(uint64_t v) { m_recvTimeout = v; }
 
     /**
-     * @brief 设置服务器名�?     */
+     * @brief 设置服务器名称
+     */
     virtual void setName(const std::string& v) { m_name = v; }
 
     /**
@@ -179,11 +184,13 @@ class TcpServer : public std::enable_shared_from_this<TcpServer>, Noncopyable {
 
    protected:
     /**
-     * @brief 处理新连接的Socket�?     */
+     * @brief 处理新连接的Socket类
+     */
     virtual void handleClient(Socket::ptr client);
 
     /**
-     * @brief 开始接受连�?     */
+     * @brief 开始接受连接
+     */
     virtual void startAccept(Socket::ptr sock);
 
    protected:
@@ -193,10 +200,12 @@ class TcpServer : public std::enable_shared_from_this<TcpServer>, Noncopyable {
     IOManager* m_worker;
     // 业务处理的调度器
     IOManager* m_ioWorker;
-    /// 服务器Socket连接和断开调度�?    IOManager* m_acceptWorker;
+    /// 服务器Socket连接和断开调度器
+    IOManager* m_acceptWorker;
     /// 接收超时时间(毫秒)
     uint64_t m_recvTimeout;
-    /// 服务器名�?    std::string m_name;
+    /// 服务器名称
+    std::string m_name;
     // 服务类型
     std::string m_type = "tcp";
     /// 服务是否停止
@@ -208,6 +217,3 @@ class TcpServer : public std::enable_shared_from_this<TcpServer>, Noncopyable {
 }  // namespace ancfl
 
 #endif
-
-
-

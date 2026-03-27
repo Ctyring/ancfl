@@ -1,6 +1,6 @@
-﻿/**
+/**
  * @file timer.h
- * @brief 定时器封�? */
+ * @brief 定时器封装 */
 #ifndef __ANCFL_TIMER_H__
 #define __ANCFL_TIMER_H__
 
@@ -13,7 +13,7 @@ namespace ancfl {
 
 class TimerManager;
 /**
- * @brief 定时�? */
+ * @brief 定时器 */
 class Timer : public std::enable_shared_from_this<Timer> {
     friend class TimerManager;
 
@@ -22,7 +22,8 @@ class Timer : public std::enable_shared_from_this<Timer> {
     typedef std::shared_ptr<Timer> ptr;
 
     /**
-     * @brief 取消定时�?     */
+     * @brief 取消定时器
+     */
     bool cancel();
 
     /**
@@ -31,13 +32,17 @@ class Timer : public std::enable_shared_from_this<Timer> {
     bool refresh();
 
     /**
-     * @brief 重置定时器时�?     * @param[in] ms 定时器执行间隔时�?毫秒)
-     * @param[in] from_now 是否从当前时间开始计�?     */
+     * @brief 重置定时器时间
+     * @param[in] ms 定时器执行间隔时间(毫秒)
+     * @param[in] from_now 是否从当前时间开始计算
+     */
     bool reset(uint64_t ms, bool from_now);
 
    private:
     /**
-     * @brief 构造函�?     * @param[in] ms 定时器执行间隔时�?     * @param[in] cb 回调函数
+     * @brief 构造函数
+     * @param[in] ms 定时器执行间隔时间
+     * @param[in] cb 回调函数
      * @param[in] recurring 是否循环
      * @param[in] manager 定时器管理器
      */
@@ -46,15 +51,18 @@ class Timer : public std::enable_shared_from_this<Timer> {
           bool recurring,
           TimerManager* manager);
     /**
-     * @brief 构造函�?     * @param[in] next 执行的时间戳(毫秒)
+     * @brief 构造函数
+     * @param[in] next 执行的时间戳(毫秒)
      */
     Timer(uint64_t next);
 
    private:
-    /// 是否循环定时�?    bool m_recurring = false;
+    /// 是否循环定时器
+    bool m_recurring = false;
     /// 执行周期
     uint64_t m_ms = 0;
-    /// 精确的执行时�?    uint64_t m_next = 0;
+    /// 精确的执行时间
+    uint64_t m_next = 0;
     /// 回调函数
     std::function<void()> m_cb;
     /// 定时器管理器
@@ -66,8 +74,10 @@ class Timer : public std::enable_shared_from_this<Timer> {
      */
     struct Comparator {
         /**
-         * @brief 比较定时器的智能指针的大�?按执行时间排�?
-         * @param[in] lhs 定时器智能指�?         * @param[in] rhs 定时器智能指�?         */
+         * @brief 比较定时器的智能指针的大小，按执行时间排序
+         * @param[in] lhs 定时器智能指针
+         * @param[in] rhs 定时器智能指针
+         */
         bool operator()(const Timer::ptr& lhs, const Timer::ptr& rhs) const;
     };
 };
@@ -79,10 +89,12 @@ class TimerManager {
     friend class Timer;
 
    public:
-    /// 读写锁类�?    typedef RWMutex RWMutexType;
+    /// 读写锁类型
+    typedef RWMutex RWMutexType;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     TimerManager();
 
     /**
@@ -91,13 +103,20 @@ class TimerManager {
     virtual ~TimerManager();
 
     /**
-     * @brief 添加定时�?     * @param[in] ms 定时器执行间隔时�?     * @param[in] cb 定时器回调函�?     * @param[in] recurring 是否循环定时�?     */
+     * @brief 添加定时器
+     * @param[in] ms 定时器执行间隔时间
+     * @param[in] cb 定时器回调函数
+     * @param[in] recurring 是否循环定时器
+     */
     Timer::ptr addTimer(uint64_t ms,
                         std::function<void()> cb,
                         bool recurring = false);
 
     /**
-     * @brief 添加条件定时�?     * @param[in] ms 定时器执行间隔时�?     * @param[in] cb 定时器回调函�?     * @param[in] weak_cond 条件
+     * @brief 添加条件定时器
+     * @param[in] ms 定时器执行间隔时间
+     * @param[in] cb 定时器回调函数
+     * @param[in] weak_cond 条件
      * @param[in] recurring 是否循环
      */
     Timer::ptr addConditionTimer(uint64_t ms,
@@ -106,7 +125,7 @@ class TimerManager {
                                  bool recurring = false);
 
     /**
-     * @brief 到最近一个定时器执行的时间间�?毫秒)
+     * @brief 到最近一个定时器执行的时间间隔(毫秒)
      */
     uint64_t getNextTimer();
 
@@ -123,11 +142,13 @@ class TimerManager {
 
    protected:
     /**
-     * @brief 当有新的定时器插入到定时器的首部,执行该函�?     */
+     * @brief 当有新的定时器插入到定时器的首部,执行该函数
+     */
     virtual void onTimerInsertedAtFront() = 0;
 
     /**
-     * @brief 将定时器添加到管理器�?     */
+     * @brief 将定时器添加到管理器中
+     */
     void addTimer(Timer::ptr val, RWMutexType::WriteLock& lock);
 
    private:
@@ -139,7 +160,8 @@ class TimerManager {
    private:
     /// Mutex
     RWMutexType m_mutex;
-    /// 定时器集�?    std::set<Timer::ptr, Timer::Comparator> m_timers;
+    /// 定时器集合
+    std::set<Timer::ptr, Timer::Comparator> m_timers;
     /// 是否触发onTimerInsertedAtFront
     bool m_tickled = false;
     /// 上次执行时间
@@ -149,6 +171,3 @@ class TimerManager {
 }  // namespace ancfl
 
 #endif
-
-
-

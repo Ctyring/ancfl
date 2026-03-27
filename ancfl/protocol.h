@@ -1,6 +1,7 @@
-﻿/**
+/**
  * @file protocol.h
- * @brief 自定义协�? */
+ * @brief 自定义协议
+ */
 #ifndef __ANCFL_PROTOCOL_H__
 #define __ANCFL_PROTOCOL_H__
 

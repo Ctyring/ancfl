@@ -1,7 +1,7 @@
-﻿#include "http_connection.h"
-#include "http_parser.h"
+#include "http_connection.h"
 #include "ancfl/log.h"
 #include "ancfl/streams/zlib_stream.h"
+#include "http_parser.h"
 
 namespace ancfl {
 namespace http {
@@ -94,7 +94,8 @@ HttpResponse::ptr HttpConnection::recvResponse() {
                 body.append(data, len);
                 int left = client_parser.content_len - len + 2;
                 while (left > 0) {
-                    // 继续�?                    int rt = read(
+                    // 继续读
+                    int rt = read(
                         data, left > (int)buff_size ? (int)buff_size : left);
                     if (rt <= 0) {
                         close();
@@ -283,7 +284,8 @@ HttpResult::ptr HttpConnection::DoRequest(HttpRequest::ptr req,
     sock->setRecvTimeout(timeout_ms);
     // 创建http连接
     HttpConnection::ptr conn = std::make_shared<HttpConnection>(sock);
-    // 发送请�?    int rt = conn->sendRequest(req);
+    // 发送请求
+    int rt = conn->sendRequest(req);
     if (rt == 0) {
         return std::make_shared<HttpResult>(
             (int)HttpResult::Error::SEND_CLOSE_BY_PEER, nullptr,
@@ -380,7 +382,8 @@ HttpConnection::ptr HttpConnectionPool::getConnection() {
         ptr = new HttpConnection(sock);
         ++m_total;
     }
-    // 提供了释放函数，当HttpConnection::ptr被释放时，会调用该函�?    return HttpConnection::ptr(ptr, std::bind(&HttpConnectionPool::ReleasePtr,
+    // 提供了释放函数，当HttpConnection::ptr被释放时，会调用该函数
+    return HttpConnection::ptr(ptr, std::bind(&HttpConnectionPool::ReleasePtr,
                                               std::placeholders::_1, this));
 }
 
@@ -526,6 +529,3 @@ HttpResult::ptr HttpConnectionPool::doRequest(HttpRequest::ptr req,
 }
 }  // namespace http
 }  // namespace ancfl
-
-
-

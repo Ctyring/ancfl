@@ -1,4 +1,4 @@
-﻿cmake_miniMum_required(VERSION 3.0)
+cmake_miniMum_required(VERSION 3.0)
 
 project(ancfl)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -6,9 +6,12 @@ include (cmake/utils.cmake)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # 指定编译选项
-# -rdynamic 将所有符号加入符号表，便于使用dlopen或者backtrace追踪到符�?# -Werror 不区分警告和错误，遇到任何警告都停止编译
+# -rdynamic 将所有符号加入符号表，便于使用dlopen或者backtrace追踪到符号
+# -Werror 不区分警告和错误，遇到任何警告都停止编译
 # -Wall 开启大部分警告提示
-# -Wno-unused-funtion 不要警告未使用函�?# -Wno-deprecated 不要警告过时特�?set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations")
+# -Wno-unused-funtion 不要警告未使用函数
+# -Wno-deprecated 不要警告过时特性
+set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations")
 set(CMAKE_C_FLAGS "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations")
 
 include_directories(.)

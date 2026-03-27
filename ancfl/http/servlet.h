@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file servlet.h
  * @brief Servlet封装
  */
@@ -10,10 +10,10 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "http.h"
-#include "http_session.h"
 #include "ancfl/thread.h"
 #include "ancfl/util.h"
+#include "http.h"
+#include "http_session.h"
 
 namespace ancfl {
 namespace http {
@@ -27,7 +27,8 @@ class Servlet {
     typedef std::shared_ptr<Servlet> ptr;
 
     /**
-     * @brief 构造函�?     * @param[in] name 名称
+     * @brief 构造函数
+     * @param[in] name 名称
      */
     Servlet(const std::string& name) : m_name(name) {}
 
@@ -71,7 +72,8 @@ class FunctionServlet : public Servlet {
         callback;
 
     /**
-     * @brief 构造函�?     * @param[in] cb 回调函数
+     * @brief 构造函数
+     * @param[in] cb 回调函数
      */
     FunctionServlet(callback cb);
     virtual int32_t handle(ancfl::http::HttpRequest::ptr request,
@@ -117,15 +119,17 @@ class ServletCreator : public IServletCreator {
 };
 
 /**
- * @brief Servlet分发�? */
+ * @brief Servlet分发器 */
 class ServletDispatch : public Servlet {
    public:
     /// 智能指针类型定义
     typedef std::shared_ptr<ServletDispatch> ptr;
-    /// 读写锁类型定�?    typedef RWMutex RWMutexType;
+    /// 读写锁类型定义
+    typedef RWMutex RWMutexType;
 
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     ServletDispatch();
     virtual int32_t handle(ancfl::http::HttpRequest::ptr request,
                            ancfl::http::HttpResponse::ptr response,
@@ -214,7 +218,8 @@ class ServletDispatch : public Servlet {
     /**
      * @brief 通过uri获取servlet
      * @param[in] uri uri
-     * @return 优先精准匹配,其次模糊匹配,最后返回默�?     */
+     * @return 优先精准匹配,其次模糊匹配,最后返回默认
+     */
     Servlet::ptr getMatchedServlet(const std::string& uri);
 
     void listAllServletCreator(
@@ -223,14 +228,16 @@ class ServletDispatch : public Servlet {
         std::map<std::string, IServletCreator::ptr>& infos);
 
    private:
-    /// 读写互斥�?    RWMutexType m_mutex;
+    /// 读写互斥锁
+    RWMutexType m_mutex;
     /// 精准匹配servlet MAP
     /// uri(/ancfl/xxx) -> servlet
     std::unordered_map<std::string, IServletCreator::ptr> m_datas;
     /// 模糊匹配servlet 数组
     /// uri(/ancfl/*) -> servlet
     std::vector<std::pair<std::string, IServletCreator::ptr> > m_globs;
-    /// 默认servlet，所有路径都没匹配到时使�?    Servlet::ptr m_default;
+    /// 默认servlet，所有路径都没匹配到时使用
+    Servlet::ptr m_default;
 };
 
 /**
@@ -241,7 +248,8 @@ class NotFoundServlet : public Servlet {
     /// 智能指针类型定义
     typedef std::shared_ptr<NotFoundServlet> ptr;
     /**
-     * @brief 构造函�?     */
+     * @brief 构造函数
+     */
     NotFoundServlet(const std::string& name);
     virtual int32_t handle(ancfl::http::HttpRequest::ptr request,
                            ancfl::http::HttpResponse::ptr response,
@@ -256,6 +264,3 @@ class NotFoundServlet : public Servlet {
 }  // namespace ancfl
 
 #endif
-
-
-
