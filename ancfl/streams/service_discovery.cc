@@ -1,4 +1,4 @@
-﻿#include "service_discovery.h"
+#include "service_discovery.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -7,6 +7,10 @@
 namespace ancfl {
 
 static ancfl::Logger::ptr g_logger = ANCFL_LOG_NAME("system");
+
+static const char* zerror(int err) {
+    return "ZK not available (stub implementation)";
+}
 
 ServiceItemInfo::ptr ServiceItemInfo::Create(const std::string& ip_and_port,
                                              const std::string& data) {
@@ -184,13 +188,6 @@ bool ZKServiceDiscovery::existsOrCreate(const std::string& path) {
             }
             return true;
         }
-        // if(pos == 0) {
-        //     std::string new_val(1024, 0);
-        //     if(m_client->create(path, "", new_val) != ZOK) {
-        //         return false;
-        //     }
-        //     return true;
-        // }
     }
     return false;
 }
@@ -342,8 +339,6 @@ bool ZKServiceDiscovery::getChildren(const std::string& path) {
 
 bool ZKServiceDiscovery::queryData(const std::string& domain,
                                    const std::string& service) {
-    // ANCFL_LOG_INFO(g_logger) << "query_data domain=" << domain
-    //                          << " service=" << service;
     if (service != "all") {
         std::string path = GetProvidersPath(domain, service);
         return getChildren(path);
@@ -360,7 +355,6 @@ bool ZKServiceDiscovery::queryData(const std::string& domain,
 
 void ZKServiceDiscovery::onZKChild(const std::string& path,
                                    ZKClient::ptr client) {
-    // ANCFL_LOG_INFO(g_logger) << "onZKChild path=" << path;
     getChildren(path);
 }
 
@@ -405,6 +399,3 @@ void ZKServiceDiscovery::onWatch(int type,
 }
 
 }  // namespace ancfl
-
-
-

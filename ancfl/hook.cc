@@ -1,4 +1,4 @@
-﻿#include "hook.h"
+#include "hook.h"
 #include <dlfcn.h>
 
 #include "config.h"
@@ -87,8 +87,10 @@ static ssize_t do_io(int fd,
                      uint32_t event,
                      int timeout_so,
                      Args&&... args) {
-    if (!ancfl::t_hook_enable) {
-        return fun(fd, std::forward<Args>(args)...);
+    ancfl::hook_init();
+    if (!ancfl::t_hook_enable || !fun) {
+        return fun ? fun(fd, std::forward<Args>(args)...) : 
+               ((OriginFun)dlsym(RTLD_NEXT, hook_fun_name))(fd, std::forward<Args>(args)...);
     }
 
     ancfl::FdCtx::ptr ctx = ancfl::FdMgr::GetInstance()->get(fd);
@@ -110,7 +112,7 @@ static ssize_t do_io(int fd,
 
 retry:
     ssize_t n = fun(fd, std::forward<Args>(args)...);
-    // 如果失败并且失败原因为中断，那么重试
+    // 如果失败并且失败原因是因为中断，那么重试
     while (n == -1 && errno == EINTR) {
         n = fun(fd, std::forward<Args>(args)...);
     }
@@ -119,7 +121,8 @@ retry:
         ancfl::IOManager* iom = ancfl::IOManager::GetThis();
         ancfl::Timer::ptr timer;
         std::weak_ptr<timer_info> winfo(tinfo);
-        // 如果有超时时�?        if (to != (uint64_t)-1) {
+        // 如果有超时时间
+        if (to != (uint64_t)-1) {
             timer = iom->addConditionTimer(
                 to,
                 [winfo, fd, iom, event]() {
@@ -163,15 +166,19 @@ HOOK_FUN(XX);
 #undef XX
 
 unsigned int sleep(unsigned int seconds) {
-    if (!ancfl::t_hook_enable) {
-        return sleep_f(seconds);
+    ancfl::hook_init();
+    if (!ancfl::t_hook_enable || !sleep_f) {
+        return sleep_f ? sleep_f(seconds) : 
+               ((unsigned int(*)(unsigned int))dlsym(RTLD_NEXT, "sleep"))(seconds);
     }
 
     ancfl::Fiber::ptr fiber = ancfl::Fiber::GetThis();
     ancfl::IOManager* iom = ancfl::IOManager::GetThis();
     iom->addTimer(
         seconds * 1000,
-        // ::* 指向成员的指�?        // void(*)(int) &a; 把a转换成返回值为void，参数为int的函数指�?        // bind绑定类成员函数时，第一个参数表示对象成员函数地址，第二个参数表示对象地址
+        // ::* 指向成员的指针
+        // void(*)(int) &a; 把a转换成返回值为void，参数为int的函数指针
+        // bind绑定类成员函数时，第一个参数表示对象成员函数地址，第二个参数表示对象地址
         std::bind((void(ancfl::Scheduler::*)(ancfl::Fiber::ptr, int thread)) &
                       ancfl::IOManager::schedule,
                   iom, fiber, -1));
@@ -180,8 +187,10 @@ unsigned int sleep(unsigned int seconds) {
 }
 
 int usleep(useconds_t usec) {
-    if (!ancfl::t_hook_enable) {
-        return usleep_f(usec);
+    ancfl::hook_init();
+    if (!ancfl::t_hook_enable || !usleep_f) {
+        return usleep_f ? usleep_f(usec) : 
+               ((int(*)(useconds_t))dlsym(RTLD_NEXT, "usleep"))(usec);
     }
     ancfl::Fiber::ptr fiber = ancfl::Fiber::GetThis();
     ancfl::IOManager* iom = ancfl::IOManager::GetThis();
@@ -195,11 +204,13 @@ int usleep(useconds_t usec) {
 }
 
 int nanosleep(const struct timespec* req, struct timespec* rem) {
-    if (!ancfl::t_hook_enable) {
-        return nanosleep_f(req, rem);
+    ancfl::hook_init();
+    if (!ancfl::t_hook_enable || !nanosleep_f) {
+        return nanosleep_f ? nanosleep_f(req, rem) : 
+               ((int(*)(const struct timespec*, struct timespec*))dlsym(RTLD_NEXT, "nanosleep"))(req, rem);
     }
 
-    int timeout_ms = req->tv_sec * 1000 + req->tv_nsec / 1000 / 1000;
+    int timeout_ms = req->tv_sec * 1000 + req->tv_nsec / 1000000;
     ancfl::Fiber::ptr fiber = ancfl::Fiber::GetThis();
     ancfl::IOManager* iom = ancfl::IOManager::GetThis();
     iom->addTimer(
@@ -212,8 +223,10 @@ int nanosleep(const struct timespec* req, struct timespec* rem) {
 }
 
 int socket(int domain, int type, int protocol) {
-    if (!ancfl::t_hook_enable) {
-        return socket_f(domain, type, protocol);
+    ancfl::hook_init();
+    if (!ancfl::t_hook_enable || !socket_f) {
+        return socket_f ? socket_f(domain, type, protocol) : 
+               ((int(*)(int, int, int))dlsym(RTLD_NEXT, "socket"))(domain, type, protocol);
     }
     int fd = socket_f(domain, type, protocol);
     if (fd == -1) {
@@ -230,7 +243,8 @@ int connect_with_timeout(int fd,
     if (!ancfl::t_hook_enable) {
         return connect_f(fd, addr, addrlen);
     }
-    // 文件句柄的情况判�?    ancfl::FdCtx::ptr ctx = ancfl::FdMgr::GetInstance()->get(fd);
+    // 文件句柄的情况判断
+    ancfl::FdCtx::ptr ctx = ancfl::FdMgr::GetInstance()->get(fd);
     if (!ctx || ctx->isClose()) {
         errno = EBADF;
         return -1;
@@ -244,18 +258,21 @@ int connect_with_timeout(int fd,
         return connect_f(fd, addr, addrlen);
     }
 
-    // 如果而文件是正常的，进行连接
+    // 如果文件是正常的，进行连接
     int n = connect_f(fd, addr, addrlen);
-    // 如果连接成功，或者连接失败，但是错误不是EINPROGRESS，直接返�?    if (n == 0) {
+    // 如果连接成功，或者连接失败，但是错误不是EINPROGRESS，直接返回
+    if (n == 0) {
         return 0;
     } else if (n != -1 || errno != EINPROGRESS) {
         return n;
     }
-    // EINPROGRESS 表示连接正在进行�?    ancfl::IOManager* iom = ancfl::IOManager::GetThis();
+    // EINPROGRESS 表示连接正在进行中
+    ancfl::IOManager* iom = ancfl::IOManager::GetThis();
     ancfl::Timer::ptr timer;
     std::shared_ptr<timer_info> tinfo(new timer_info);
     std::weak_ptr<timer_info> winfo(tinfo);
-    // 如果存在超时时间，添加一个定时器，定时器会在超时的时候调�?    if (timeout_ms != (uint64_t)-1) {
+    // 如果存在超时时间，添加一个定时器，定时器会在超时的时候调用
+    if (timeout_ms != (uint64_t)-1) {
         timer = iom->addConditionTimer(
             timeout_ms,
             [winfo, fd, iom]() {
@@ -297,7 +314,8 @@ int connect_with_timeout(int fd,
     if (-1 == getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &len)) {
         return -1;
     }
-    // 如果状态码�?，表示连接成�?    if (!error) {
+    // 如果状态码为0，表示连接成功
+    if (!error) {
         return 0;
     } else {
         errno = error;
@@ -380,8 +398,10 @@ ssize_t sendmsg(int s, const struct msghdr* msg, int flags) {
 }
 
 int close(int fd) {
-    if (!ancfl::t_hook_enable) {
-        return close_f(fd);
+    ancfl::hook_init();
+    if (!ancfl::t_hook_enable || !close_f) {
+        return close_f ? close_f(fd) : 
+               ((int(*)(int))dlsym(RTLD_NEXT, "close"))(fd);
     }
 
     ancfl::FdCtx::ptr ctx = ancfl::FdMgr::GetInstance()->get(fd);
@@ -517,6 +537,3 @@ int setsockopt(int sockfd,
     return setsockopt_f(sockfd, level, optname, optval, optlen);
 }
 }
-
-
-

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file ancfl.h
  * @brief ancfl头文�? */
 #ifndef __ANCFL_ANCFL_H__

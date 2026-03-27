@@ -325,3 +325,18 @@ class UnknownAddress : public Address {
     UnknownAddress(const sockaddr& addr);
     const sockaddr* getAddr() const override;
     sockaddr* getAddr() override;
+    socklen_t getAddrLen() const override;
+    std::ostream& insert(std::ostream& os) const override;
+
+   private:
+    sockaddr m_addr;
+};
+
+/**
+ * @brief 流式输出Address
+ */
+std::ostream& operator<<(std::ostream& os, const Address& addr);
+
+}  // namespace ancfl
+
+#endif  // __ANCFL_ADDRESS_H__

@@ -1,4 +1,4 @@
-﻿#ifndef __ANCFL_DB_MYSQL_H__
+#ifndef __ANCFL_DB_MYSQL_H__
 #define __ANCFL_DB_MYSQL_H__
 
 #include <mysql/mysql.h>
@@ -121,8 +121,8 @@ class MySQLStmtRes : public ISQLData {
 
         void alloc(size_t size);
 
-        my_bool is_null;
-        my_bool error;
+        bool is_null;
+        bool error;
         enum_field_types type;
         unsigned long length;
         int32_t data_length;

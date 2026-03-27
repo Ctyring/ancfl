@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ancfl/http/http_server.h"
 #include "ancfl/rock/rock_stream.h"
 #include "ancfl/streams/service_discovery.h"
@@ -16,7 +16,7 @@ class Application {
     void listAllServer(
         std::map<std::string, std::vector<TcpServer::ptr> >& servers);
 
-    ZKServiceDiscovery::ptr getServiceDiscovery() const {
+    IServiceDiscovery::ptr getServiceDiscovery() const {
         return m_serviceDiscovery;
     }
     RockSDLoadBalance::ptr getRockSDLoadBalance() const {
@@ -35,7 +35,7 @@ class Application {
     IOManager::ptr m_mainIOManager;
     static Application* s_instance;
 
-    ZKServiceDiscovery::ptr m_serviceDiscovery;
+    IServiceDiscovery::ptr m_serviceDiscovery;
     RockSDLoadBalance::ptr m_rockSDLoadBalance;
 };
 

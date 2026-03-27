@@ -1,4 +1,4 @@
-﻿#include "fiber.h"
+#include "fiber.h"
 #include <atomic>
 #include "config.h"
 #include "log.h"
@@ -90,7 +90,7 @@ Fiber::~Fiber() {
     ANCFL_LOG_DEBUG(g_logger) << "Fiber::~Fiber id=" << m_id;
 }
 
-// 重置协程函数，并重置状�?//  INIT，TERM
+// 重置协程函数，并重置状态为 INIT，TERM
 void Fiber::reset(std::function<void()> cb) {
     ANCFL_ASSERT(m_stack);
     ANCFL_ASSERT(m_state == TERM || m_state == EXCEPT || m_state == INIT);
@@ -116,7 +116,8 @@ void Fiber::call() {
     }
 }
 
-// 切换到当前协程执�?void Fiber::swapIn() {
+// 切换到当前协程执行
+void Fiber::swapIn() {
     SetThis(this);
 
     ANCFL_ASSERT(m_state != EXEC);
@@ -134,11 +135,19 @@ void Fiber::back() {
     }
 }
 
-// 切换到后台执�?void Fiber::swapOut() {
-    SetThis(Scheduler::GetMainFiber());
-
-    if (swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx)) {
-        ANCFL_ASSERT2(false, "swapcontext");
+// 切换到后台执行
+void Fiber::swapOut() {
+    Fiber* main_fiber = Scheduler::GetMainFiber();
+    if (main_fiber) {
+        SetThis(main_fiber);
+        if (swapcontext(&m_ctx, &main_fiber->m_ctx)) {
+            ANCFL_ASSERT2(false, "swapcontext");
+        }
+    } else {
+        SetThis(t_threadFiber.get());
+        if (swapcontext(&m_ctx, &t_threadFiber->m_ctx)) {
+            ANCFL_ASSERT2(false, "swapcontext");
+        }
     }
 }
 
@@ -149,24 +158,28 @@ void Fiber::SetThis(Fiber* f) {
 
 // 返回当前协程
 Fiber::ptr Fiber::GetThis() {
-    // 当前协程存在，正常返�?    if (t_fiber) {
+    // 当前协程存在，正常返回
+    if (t_fiber) {
         return t_fiber->shared_from_this();
     }
     // 当前协程不存在，创建一个主协程
     Fiber::ptr main_fiber(new Fiber);
     ANCFL_ASSERT(t_fiber == main_fiber.get());
-    // t_threadFiber保存主协�?    t_threadFiber = main_fiber;
+    // t_threadFiber保存主协程
+    t_threadFiber = main_fiber;
     return t_fiber->shared_from_this();
 }
 
-// 协程切换到后台，并且设置为Ready状�?void Fiber::YieldToReady() {
+// 协程切换到后台，并且设置为Ready状态
+void Fiber::YieldToReady() {
     Fiber::ptr cur = GetThis();
     ANCFL_ASSERT(cur->m_state == EXEC);
     cur->m_state = READY;
     cur->swapOut();
 }
 
-// 协程切换到后台，并且设置为Hold状�?void Fiber::YieldToHold() {
+// 协程切换到后台，并且设置为Hold状态
+void Fiber::YieldToHold() {
     Fiber::ptr cur = GetThis();
     ANCFL_ASSERT(cur->m_state == EXEC);
     cur->m_state = HOLD;
@@ -231,6 +244,3 @@ void Fiber::CallerMainFunc() {
                   "never reach fiber_id=" + std::to_string(raw_ptr->getId()));
 }
 }  // namespace ancfl
-
-
-

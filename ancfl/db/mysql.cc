@@ -1,4 +1,4 @@
-﻿#include "mysql.h"
+#include "mysql.h"
 #include "ancfl/config.h"
 #include "ancfl/log.h"
 
@@ -750,7 +750,7 @@ bool MySQLStmtRes::next() {
 }
 
 MySQLStmtRes::Data::Data()
-    : is_null(0), error(0), type(), length(0), data_length(0), data(nullptr) {}
+    : is_null(false), error(false), type(), length(0), data_length(0), data(nullptr) {}
 
 MySQLStmtRes::Data::~Data() {
     if (data) {

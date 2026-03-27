@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <unistd.h>
 #include <functional>
 #include "ancfl/singleton.h"
@@ -10,8 +10,10 @@ struct ProcessInfo {
     pid_t parent_id = 0;
     /// 主进程id
     pid_t main_id = 0;
-    /// 父进程启动时�?    uint64_t parent_start_time = 0;
-    /// 主进程启动时�?    uint64_t main_start_time = 0;
+    /// 父进程启动时间
+    time_t parent_start_time = 0;
+    /// 主进程启动时间
+    time_t main_start_time = 0;
     /// 主进程重启的次数
     uint32_t restart_count = 0;
 

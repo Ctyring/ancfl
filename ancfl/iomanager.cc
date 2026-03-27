@@ -12,7 +12,7 @@ namespace ancfl {
 
 static ancfl::Logger::ptr g_logger = ANCFL_LOG_NAME("system");
 
-enum EpollCtlOp {};
+enum EpollCtlOp { };
 
 static std::ostream& operator<<(std::ostream& os, const EpollCtlOp& op) {
     switch ((int)op) {
@@ -341,8 +341,8 @@ bool IOManager::stopping() {
 }
 
 void IOManager::idle() {
-    const uint64_t MAX_EVNETS = 256;
-    epoll_event* events = new epoll_event[MAX_EVNETS]();
+    const uint64_t MAX_EVENTS = 256;
+    epoll_event* events = new epoll_event[MAX_EVENTS]();
     std::shared_ptr<epoll_event> shared_events(
         events, [](epoll_event* ptr) { delete[] ptr; });
 
@@ -368,7 +368,7 @@ void IOManager::idle() {
                 next_timeout = MAX_TIMEOUT;
             }
             // 等待事件，如果没有事件到来，在next_timeout时间之前会将整个进程陷入睡眠
-            rt = epoll_wait(m_epfd, events, MAX_EVNETS, (int)next_timeout);
+            rt = epoll_wait(m_epfd, events, MAX_EVENTS, (int)next_timeout);
             if (rt < 0 && errno == EINTR) {
                 // 如果是被信号中断，说明需要继续等待
             } else {
@@ -392,7 +392,7 @@ void IOManager::idle() {
             epoll_event& event = events[i];
             // 如果是tickle事件，就读完跳过（这个事件只是为了唤醒epoll_wait）
             if (event.data.fd == m_tickleFds[0]) {
-                uint8_t dummy[MAX_EVNETS];
+                uint8_t dummy[MAX_EVENTS];
                 while (read(m_tickleFds[0], dummy, sizeof(dummy)) > 0) {
                 }
                 continue;
@@ -443,7 +443,7 @@ void IOManager::idle() {
         }
         // 让出协程，处理其他协程，处理完会再切进来(scheduler的run方法)
         // 只有这个协程切出去了，才会去调度其他协程，刚刚其实只是把任务排序管理了一下
-        // Fiber::ptr cur = Fiber::GetThis();
+        Fiber::ptr cur = Fiber::GetThis();
         auto raw_ptr = cur.get();
         cur.reset();
 

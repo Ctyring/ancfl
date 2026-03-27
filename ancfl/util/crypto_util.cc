@@ -1,4 +1,4 @@
-﻿#include "crypto_util.h"
+#include "crypto_util.h"
 #include <stdio.h>
 #include <iostream>
 #include "ancfl/log.h"
@@ -69,29 +69,31 @@ int32_t CryptoUtil::Crypto(const EVP_CIPHER* cipher,
                            int32_t* out_len) {
     int tmp_len = 0;
     bool has_error = false;
-    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        return -1;
+    }
     do {
         // static CryptoInit s_crypto_init;
-        EVP_CIPHER_CTX_init(&ctx);
-        EVP_CipherInit_ex(&ctx, cipher, nullptr, (const uint8_t*)key,
+        EVP_CipherInit_ex(ctx, cipher, nullptr, (const uint8_t*)key,
                           (const uint8_t*)iv, enc);
-        if (EVP_CipherUpdate(&ctx, (uint8_t*)out, &tmp_len, (const uint8_t*)in,
+        if (EVP_CipherUpdate(ctx, (uint8_t*)out, &tmp_len, (const uint8_t*)in,
                              in_len) != 1) {
             has_error = true;
             break;
         }
         *out_len = tmp_len;
-        if (EVP_CipherFinal_ex(&ctx, (uint8_t*)out + tmp_len, &tmp_len) != 1) {
+        if (EVP_CipherFinal_ex(ctx, (uint8_t*)out + tmp_len, &tmp_len) != 1) {
             has_error = true;
             break;
         }
         *out_len += tmp_len;
-    } while (0);
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    } while (false);
+    EVP_CIPHER_CTX_free(ctx);
     if (has_error) {
         return -1;
     }
-    return *out_len;
+    return 0;
 }
 
 int32_t RSACipher::GenerateKey(const std::string& pubkey_file,

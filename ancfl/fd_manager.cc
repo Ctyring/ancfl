@@ -13,8 +13,8 @@ FdCtx::FdCtx(int fd)
       m_userNonblock(false),
       m_isClosed(false),
       m_fd(fd),
-      m_recvTimeout(-1),
-      m_sendTimeout(-1) {
+      m_recvTimeout(0),
+      m_sendTimeout(0) {
     init();
 }
 
@@ -24,8 +24,8 @@ bool FdCtx::init() {
     if (m_isInit) {
         return true;
     }
-    m_recvTimeout = -1;
-    m_sendTimeout = -1;
+    m_recvTimeout = 0;
+    m_sendTimeout = 0;
 
     struct stat fd_stat;
     if (-1 == fstat(m_fd, &fd_stat)) {

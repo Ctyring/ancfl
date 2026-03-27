@@ -170,36 +170,35 @@ int ZlibStream::decode(const iovec* v, const uint64_t& size, bool finish) {
         m_zstream.avail_in = v[i].iov_len;
         m_zstream.next_in = (Bytef*)v[i].iov_base;
         // 判断是否是最后一次读取
-        flush = finish
-            ? (i == size - 1 ?
-                             // Z_FINISH : Z_NO_FLUSH) : Z_NO_FLUSH; 数据指针
-               iovec* ivc = nullptr;
-               do {
-                   // 如果buffs不为空，且最后一个buff的长度不等于buffSize
-                   if (!m_buffs.empty() &&
-                       m_buffs.back().iov_len != m_buffSize) {
-                       // 获取最后一个buff
-                       ivc = &m_buffs.back();
-                   } else {
-                       // 否则创建一个新的buff
-                       iovec vc;
-                       vc.iov_base = malloc(m_buffSize);
-                       vc.iov_len = 0;
-                       m_buffs.push_back(vc);
-                       ivc = &m_buffs.back();
-                   }
-                   // 设置输出缓冲区
-                   m_zstream.avail_out = m_buffSize - ivc->iov_len;
-                   m_zstream.next_out = (Bytef*)ivc->iov_base + ivc->iov_len;
+        flush = finish ? (i == size - 1 ? Z_FINISH : Z_NO_FLUSH) : Z_NO_FLUSH;
+        // 数据指针
+        iovec* ivc = nullptr;
+        do {
+            // 如果buffs不为空，且最后一个buff的长度不等于buffSize
+            if (!m_buffs.empty() &&
+                m_buffs.back().iov_len != m_buffSize) {
+                // 获取最后一个buff
+                ivc = &m_buffs.back();
+            } else {
+                // 否则创建一个新的buff
+                iovec vc;
+                vc.iov_base = malloc(m_buffSize);
+                vc.iov_len = 0;
+                m_buffs.push_back(vc);
+                ivc = &m_buffs.back();
+            }
+            // 设置输出缓冲区
+            m_zstream.avail_out = m_buffSize - ivc->iov_len;
+            m_zstream.next_out = (Bytef*)ivc->iov_base + ivc->iov_len;
 
-                   ret = inflate(&m_zstream, flush);
-                   if (ret == Z_STREAM_ERROR) {
-                       return ret;
-                   }
-                   // 更新buff的长度
-                   ivc->iov_len = m_buffSize - m_zstream.avail_out;
-                   // 如果是最后一次读取，解压缩完成
-               } while (m_zstream.avail_out == 0);
+            ret = inflate(&m_zstream, flush);
+            if (ret == Z_STREAM_ERROR) {
+                return ret;
+            }
+            // 更新buff的长度
+            ivc->iov_len = m_buffSize - m_zstream.avail_out;
+            // 如果是最后一次读取，解压缩完成
+        } while (m_zstream.avail_out == 0);
     }
 
     if (flush == Z_FINISH) {

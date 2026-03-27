@@ -1,4 +1,4 @@
-﻿#ifndef __ANCFL_STREAMS_SERVICE_DISCOVERY_H__
+#ifndef __ANCFL_STREAMS_SERVICE_DISCOVERY_H__
 #define __ANCFL_STREAMS_SERVICE_DISCOVERY_H__
 
 #include <memory>
@@ -42,6 +42,11 @@ class IServiceDiscovery {
         service_callback;
     virtual ~IServiceDiscovery() {}
 
+    const std::string& getSelfInfo() const { return m_selfInfo; }
+    void setSelfInfo(const std::string& v) { m_selfInfo = v; }
+    const std::string& getSelfData() const { return m_selfData; }
+    void setSelfData(const std::string& v) { m_selfData = v; }
+
     void registerServer(const std::string& domain,
                         const std::string& service,
                         const std::string& ip_and_port,
@@ -75,6 +80,8 @@ class IServiceDiscovery {
 
    protected:
     ancfl::RWMutex m_mutex;
+    std::string m_selfInfo;
+    std::string m_selfData;
     // domain -> [service -> [id -> ServiceItemInfo] ]
     std::unordered_map<
         std::string,
@@ -101,10 +108,6 @@ class ZKServiceDiscovery
    public:
     typedef std::shared_ptr<ZKServiceDiscovery> ptr;
     ZKServiceDiscovery(const std::string& hosts);
-    const std::string& getSelfInfo() const { return m_selfInfo; }
-    void setSelfInfo(const std::string& v) { m_selfInfo = v; }
-    const std::string& getSelfData() const { return m_selfData; }
-    void setSelfData(const std::string& v) { m_selfData = v; }
 
     virtual void start();
     virtual void stop();
@@ -129,8 +132,6 @@ class ZKServiceDiscovery
 
    private:
     std::string m_hosts;
-    std::string m_selfInfo;
-    std::string m_selfData;
     ZKClient::ptr m_client;
     ancfl::Timer::ptr m_timer;
     bool m_isOnTimer = false;

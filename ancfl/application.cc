@@ -1,4 +1,4 @@
-﻿#include "application.h"
+#include "application.h"
 
 #include <unistd.h>
 
@@ -6,12 +6,12 @@
 #include "ancfl/config.h"
 #include "ancfl/daemon.h"
 #include "ancfl/db/fox_thread.h"
-#include "ancfl/db/redis.h"
+// #include "ancfl/db/redis.h"
 #include "ancfl/env.h"
 #include "ancfl/http/ws_server.h"
 #include "ancfl/log.h"
 #include "ancfl/module.h"
-#include "ancfl/ns/name_server_module.h"
+// #include "ancfl/ns/name_server_module.h"
 #include "ancfl/rock/rock_server.h"
 #include "ancfl/rock/rock_stream.h"
 #include "ancfl/tcp_server.h"
@@ -173,7 +173,7 @@ int Application::run_fiber() {
     ancfl::WorkerMgr::GetInstance()->init();
     FoxThreadMgr::GetInstance()->init();
     FoxThreadMgr::GetInstance()->start();
-    RedisMgr::GetInstance();
+    // RedisMgr::GetInstance();
     auto http_confs = g_servers_conf->getValue();
     std::vector<TcpServer::ptr> svrs;
     for (auto& i : http_confs) {

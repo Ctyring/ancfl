@@ -1,4 +1,4 @@
-﻿#include "status_servlet.h"
+#include "status_servlet.h"
 #include "ancfl/ancfl.h"
 
 namespace ancfl {

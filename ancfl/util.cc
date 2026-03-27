@@ -5,6 +5,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <ifaddrs.h>
 #include <string.h>
+#include <sys/signal.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>

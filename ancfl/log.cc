@@ -553,23 +553,25 @@ std::ostream& LogFormatter::format(std::ostream& ofs,
 //%xxx %xxx{xxx} %%
 void LogFormatter::init() {
     // str, format, type
-    // 这个三元组参数：str是原始字符串，format是字符串的格式化方法（比如时间，有很多显示方法，这个内容就在{之间}），type代表是否格式�?0代表普通字符串)
+    // 这个三元组参数：str是原始字符串，format是字符串的格式化方法（比如时间，有很多显示方法，这个内容就在{之间}），type代表是否格式(0代表普通字符串)
     std::vector<std::tuple<std::string, std::string, int> > vec;
     std::string nstr;
     for (size_t i = 0; i < m_pattern.size(); ++i) {
         // 如果不是%
         if (m_pattern[i] != '%') {
-            // 先放入nstr�?            nstr.append(1, m_pattern[i]);
+            // 先放入nstr中
+            nstr.append(1, m_pattern[i]);
             continue;
         }
-        // 如果�?并且不是最后一个字�?        if ((i + 1) < m_pattern.size()) {
-            // 如果下一个字符是%，说明是%%，放入一�?到nstr
+        // 如果是%并且不是最后一个字符
+        if ((i + 1) < m_pattern.size()) {
+            // 如果下一个字符是%，说明是%%，放入一个%到nstr
             if (m_pattern[i + 1] == '%') {
                 nstr.append(1, '%');
                 continue;
             }
         }
-        // 到这里说明目前的字符�?并且下一个字符不�?
+        // 到这里说明目前的字符是%并且下一个字符不是%
         size_t n = i + 1;
         // 1说明'{'没有'}'匹配
         int fmt_status = 0;
@@ -586,10 +588,12 @@ void LogFormatter::init() {
             }
             if (fmt_status == 0) {
                 if (m_pattern[n] == '{') {
-                    // 把大括号之前的部分切�?                    str = m_pattern.substr(i + 1, n - i - 1);
+                    // 把大括号之前的部分切出来
+                    str = m_pattern.substr(i + 1, n - i - 1);
                     // std::cout << "*" << str << std::endl;
                     fmt_status = 1;  // 解析格式
-                                     //  大括号开�?                    fmt_begin = n;
+                                     //  大括号开始
+                    fmt_begin = n;
                     ++n;
                     continue;
                 }
@@ -626,41 +630,47 @@ void LogFormatter::init() {
             vec.push_back(std::make_tuple("<<pattern_error>>", fmt, 0));
         }
     }
-    // 如果还有普通字符串进来的话，放入数�?    if (!nstr.empty()) {
+    // 如果还有普通字符串进来的话，放入数组
+    if (!nstr.empty()) {
         vec.push_back(std::make_tuple(nstr, "", 0));
     }
-    // 到这里为止，已经把原模式串切割成了很多三元组，每个三元组代表一个格式化的内�?    // 这里相当于一个字典，key是str，value是对应的格式化方�?    static std::map<std::string,
-                    std::function<FormatItem::ptr(const std::string& str)> >
+    // 到这里为止，已经把原模式串切割成了很多三元组，每个三元组代表一个格式化的内容
+    // 这里相当于一个字典，key是str，value是对应的格式化方法
+    static std::map<std::string,
+                    std::function<LogFormatter::FormatItem::ptr(const std::string& str)> >
         s_format_items = {
 #define XX(str, C)                                                             \
     {                                                                          \
 #str,                                                                  \
-            [](const std::string& fmt) { return FormatItem::ptr(new C(fmt)); } \
+            [](const std::string& fmt) { return LogFormatter::FormatItem::ptr(new C(fmt)); } \
     }
 
             XX(m, MessageFormatItem),     // m:消息
             XX(p, LevelFormatItem),       // p:日志级别
-            XX(r, ElapseFormatItem),      // r:累计毫秒�?            XX(c, NameFormatItem),        // c:日志名称
+            XX(r, ElapseFormatItem),      // r:累计毫秒数
+            XX(c, NameFormatItem),        // c:日志名称
             XX(t, ThreadIdFormatItem),    // t:线程id
             XX(n, NewLineFormatItem),     // n:换行
             XX(d, DateTimeFormatItem),    // d:时间
-            XX(f, FilenameFormatItem),    // f:文件�?            XX(l, LineFormatItem),        // l:行号
+            XX(f, FilenameFormatItem),    // f:文件名
+            XX(l, LineFormatItem),        // l:行号
             XX(T, TabFormatItem),         // T:Tab
             XX(F, FiberIdFormatItem),     // F:协程id
             XX(N, ThreadNameFormatItem),  // N:线程名称
 #undef XX
         };
 
-    // 遍历三元�?    for (auto& i : vec) {
+    // 遍历三元组
+    for (auto& i : vec) {
         // 如果是普通字符串
         if (std::get<2>(i) == 0) {
             m_items.push_back(
-                FormatItem::ptr(new StringFormatItem(std::get<0>(i))));
+                LogFormatter::FormatItem::ptr(new StringFormatItem(std::get<0>(i))));
         } else {
             // 查找对应的格式化方法
             auto it = s_format_items.find(std::get<0>(i));
             if (it == s_format_items.end()) {
-                m_items.push_back(FormatItem::ptr(new StringFormatItem(
+                m_items.push_back(LogFormatter::FormatItem::ptr(new StringFormatItem(
                     "<<error_format %" + std::get<0>(i) + ">>")));
                 m_error = true;
             } else {
@@ -709,7 +719,8 @@ struct LogAppenderDefine {
     std::string prefix;
     /// 文件路径后缀
     std::string suffix;
-    /// 开始时�?    std::string beginTime;
+    /// 开始时间
+    std::string beginTime;
     /// 间隔时间
     uint64_t interval;
     /// 时间格式

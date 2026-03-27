@@ -1,4 +1,4 @@
-﻿#include "bytearray.h"
+#include "bytearray.h"
 #include <string.h>
 #include <fstream>
 #include <iomanip>
@@ -21,7 +21,7 @@ ByteArray::Node::~Node() {
     }
 }
 
-ByteArray::ByteArray(size_t base_size)
+ByteArray::ByteArray(size_t base_size) 
     : m_baseSize(base_size),
       m_position(0),
       m_capacity(base_size),
@@ -370,22 +370,26 @@ void ByteArray::read(void* buf, size_t size) {
     if (size > getReadSize()) {
         throw std::out_of_range("not enough len");
     }
-    // 当前的位�?    size_t npos = m_position % m_baseSize;
-    // 当前剩余的容�?    size_t ncap = m_cur->size - npos;
+    // 当前的位置
+    size_t npos = m_position % m_baseSize;
+    // 当前剩余的容量
+    size_t ncap = m_cur->size - npos;
     size_t bpos = 0;
     while (size > 0) {
         // 如果够用
         if (ncap >= size) {
             // 拷贝出来
             memcpy((char*)buf + bpos, m_cur->ptr + npos, size);
-            // 如果用完了，就走到下一�?            if (m_cur->size == (npos + size)) {
+            // 如果用完了，就走到下一个
+            if (m_cur->size == (npos + size)) {
                 m_cur = m_cur->next;
             }
             m_position += size;
             bpos += size;
             size = 0;
         } else {
-            // 先把当前块能保存的拷贝出�?            memcpy((char*)buf + bpos, m_cur->ptr + npos, ncap);
+            // 先把当前块能保存的拷贝出来
+            memcpy((char*)buf + bpos, m_cur->ptr + npos, ncap);
             // 更新到下一个块
             m_position += ncap;
             bpos += ncap;
@@ -448,7 +452,8 @@ void ByteArray::setPosition(size_t v) {
 bool ByteArray::writeToFile(const std::string& name) const {
     std::ofstream ofs;
     // std::ios::trunc 如果文件存在，先删除(覆盖)
-    // std::ios::binary 二进制文�?    ofs.open(name, std::ios::trunc | std::ios::binary);
+    // std::ios::binary 二进制文件
+    ofs.open(name, std::ios::trunc | std::ios::binary);
     if (!ofs) {
         ANCFL_LOG_ERROR(g_logger)
             << "writeToFile name=" << name << " error , errno=" << errno
@@ -465,7 +470,7 @@ bool ByteArray::writeToFile(const std::string& name) const {
         // 计算当前块的偏移
         int diff = pos % m_baseSize;
         // 计算能写入的长度
-        int64_t len =
+        int64_t len = 
             (read_size > (int64_t)m_baseSize ? m_baseSize : read_size) - diff;
         // 写入
         ofs.write(cur->ptr + diff, len);
@@ -488,7 +493,7 @@ bool ByteArray::readFromFile(const std::string& name) {
         return false;
     }
 
-    std::shared_ptr<char> buff(new char[m_baseSize],
+    std::shared_ptr<char> buff(new char[m_baseSize], 
                                [](char* ptr) { delete[] ptr; });
     while (!ifs.eof()) {
         ifs.read(buff.get(), m_baseSize);
@@ -553,7 +558,7 @@ std::string ByteArray::toHexString() const {
     return ss.str();
 }
 
-uint64_t ByteArray::getReadBuffers(std::vector<iovec>& buffers,
+uint64_t ByteArray::getReadBuffers(std::vector<iovec>& buffers, 
                                    uint64_t len) const {
     len = len > getReadSize() ? getReadSize() : len;
     if (len == 0) {
@@ -585,8 +590,8 @@ uint64_t ByteArray::getReadBuffers(std::vector<iovec>& buffers,
     return size;
 }
 
-uint64_t ByteArray::getReadBuffers(std::vector<iovec>& buffers,
-                                   uint64_t len,
+uint64_t ByteArray::getReadBuffers(std::vector<iovec>& buffers, 
+                                   uint64_t len, 
                                    uint64_t position) const {
     len = len > getReadSize() ? getReadSize() : len;
     if (len == 0) {
@@ -654,6 +659,3 @@ uint64_t ByteArray::getWriteBuffers(std::vector<iovec>& buffers, uint64_t len) {
 }
 
 }  // namespace ancfl
-
-
-
