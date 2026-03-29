@@ -55,68 +55,91 @@ IPAddress::ptr Address::LookupAnyIPAddress(const std::string& host,
     return nullptr;
 }
 
+/**
+ * @brief 根据主机名和服务名查找网络地址
+ *
+ * @param result 输出参数，存储查找结果的地址列表
+ * @param host 主机名或IP地址字符串，可以包含端口号
+ * @param family 地址族，如AF_INET(IPv4)、AF_INET6(IPv6)、AF_UNSPEC(任意)
+ * @param type 套接字类型，如SOCK_STREAM(TCP)、SOCK_DGRAM(UDP)
+ * @param protocol 协议类型，如IPPROTO_TCP、IPPROTO_UDP，0表示自动选择
+ * @return bool 是否成功找到地址
+ */
 bool Address::Lookup(std::vector<Address::ptr>& result,
                      const std::string& host,
                      int family,
                      int type,
                      int protocol) {
+    // 初始化addrinfo结构体，用于指定查找条件
     addrinfo hints, *results, *next;
-    hints.ai_flags = 0;
-    hints.ai_family = family;
-    hints.ai_socktype = type;
-    hints.ai_protocol = protocol;
-    hints.ai_addrlen = 0;
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
+    hints.ai_flags = 0;            // 无特殊标志
+    hints.ai_family = family;      // 地址族
+    hints.ai_socktype = type;      // 套接字类型
+    hints.ai_protocol = protocol;  // 协议类型
+    hints.ai_addrlen = 0;          // 地址长度，由getaddrinfo填充
+    hints.ai_canonname = NULL;     // 规范主机名，由getaddrinfo填充
+    hints.ai_addr = NULL;          // 地址指针，由getaddrinfo填充
+    hints.ai_next = NULL;          // 下一个地址，由getaddrinfo填充
 
-    std::string node;
-    const char* service = NULL;
+    std::string node;            // 存储主机名或IP地址
+    const char* service = NULL;  // 存储服务名或端口号
 
-    //检�?ipv6address serivce
+    // 处理IPv6地址格式，如[2001:db8::1]:8080
     if (!host.empty() && host[0] == '[') {
+        // 查找IPv6地址的结束符']'
         const char* endipv6 =
             (const char*)memchr(host.c_str() + 1, ']', host.size() - 1);
         if (endipv6) {
-            // TODO check out of range
+            // 检查是否包含端口号
             if (*(endipv6 + 1) == ':') {
-                service = endipv6 + 2;
+                service = endipv6 + 2;  // 端口号部分
             }
+            // 提取IPv6地址部分（去掉方括号）
             node = host.substr(1, endipv6 - host.c_str() - 1);
         }
     }
 
-    // 检�?node serivce
-    // 如果node为空说明这是一个ipv4地址
+    // 处理IPv4地址或主机名格式，如192.168.1.1:8080或example.com:80
     if (node.empty()) {
+        // 查找端口号分隔符':'
         service = (const char*)memchr(host.c_str(), ':', host.size());
         if (service) {
+            // 确保只有一个':'，避免将IPv6地址误解析为IPv4
             if (!memchr(service + 1, ':',
                         host.c_str() + host.size() - service - 1)) {
+                // 提取主机名或IPv4地址部分
                 node = host.substr(0, service - host.c_str());
-                ++service;
+                ++service;  // 跳过':'，指向端口号
             }
         }
     }
 
+    // 如果node为空，说明整个host都是主机名或IP地址（没有端口号）
     if (node.empty()) {
         node = host;
     }
+
+    // 调用getaddrinfo进行地址解析
     int error = getaddrinfo(node.c_str(), service, &hints, &results);
     if (error) {
+        // 解析失败，记录错误信息
         ANCFL_LOG_DEBUG(g_logger)
             << "Address::Lookup getaddress(" << host << ", " << family << ", "
             << type << ") err=" << error << " errstr=" << gai_strerror(error);
         return false;
     }
 
+    // 遍历解析结果，创建Address对象并添加到结果列表
     next = results;
     while (next) {
         result.push_back(Create(next->ai_addr, (socklen_t)next->ai_addrlen));
         next = next->ai_next;
     }
 
+    // 释放getaddrinfo分配的内存
     freeaddrinfo(results);
+
+    // 返回是否找到有效地址
     return !result.empty();
 }
 
@@ -288,7 +311,7 @@ IPAddress::ptr IPAddress::Create(const char* address, uint16_t port) {
 IPv4Address::ptr IPv4Address::Create(const char* address, uint16_t port) {
     IPv4Address::ptr rt(new IPv4Address);
     rt->m_addr.sin_port = byteswapOnLittleEndian(port);
-    // inet_pton的作用是将一个点分十进制的IP地址转换成一�?2位的网络字节序的二进制数
+    // inet_pton的作用是将一个点分十进制的IP地址转换成一个32位的网络字节序的二进制数
     int result = inet_pton(AF_INET, address, &rt->m_addr.sin_addr);
     if (result <= 0) {
         ANCFL_LOG_DEBUG(g_logger)
@@ -574,6 +597,3 @@ std::ostream& operator<<(std::ostream& os, const Address& addr) {
 }
 
 }  // namespace ancfl
-
-
-

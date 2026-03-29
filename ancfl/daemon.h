@@ -25,14 +25,14 @@ typedef ancfl::Singleton<ProcessInfo> ProcessInfoMgr;
 /**
  * @brief 启动程序可以选择用守护进程的方式
  * @param[in] argc 参数个数
- * @param[in] argv 参数值数�? * @param[in] main_cb 启动函数
- * @param[in] is_daemon 是否守护进程的方�? * @return 返回程序的执行结�? */
+ * @param[in] argv 参数值数组
+ * @param[in] main_cb 启动函数
+ * @param[in] is_daemon 是否守护进程的方式
+ * @return 返回程序的执行结果
+ */
 int start_daemon(int argc,
                  char** argv,
                  std::function<int(int argc, char** argv)> main_cb,
                  bool is_daemon);
 
 }  // namespace ancfl
-
-
-
